@@ -1,0 +1,52 @@
+# Introduction
+
+Ceci est la documentation ^^.
+
+## Démarrer les projets en local
+
+### Prérequis
+
+- Node.js
+- pnpm
+
+### Installation
+
+Pour installer Node.js il est conseillé de passer par [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)(Node Version Manager) pour gérer les versions de Node.js.
+
+Une fois l'installation de nvm terminée, il suffit de lancer la commande suivante pour installer Node.js :
+
+```bash
+nvm install 20.12.0
+```
+
+Pour vérifier que Node.js est bien installé, il suffit de lancer les commandes suivantes :
+
+```bash
+node -v
+npm -v
+```
+
+Par défaut, NPM(Node Package Manager) est installé avec Node.js. Il est recommandé d'utiliser PNPM(Performant Node Package Manager) pour gérer les dépendances des projets.(voir [ici](https://pnpm.io/))
+
+Pour installer PNPM, il suffit de lancer la commande suivante :
+
+```bash
+npm install -g pnpm
+```
+
+Pour vérifier que PNPM est bien installé, il suffit de lancer la commande suivante :
+
+```bash
+pnpm -v
+```
+
+### Démarrer les projets
+
+Il est nécessaire de se trouver dans le dossier du projet `photo-sharing` pour lancer les commandes suivantes.
+
+```bash
+pnpm install # installer les dépendances
+pnpm dev # démarrer le projet en mode développement
+```
+
+Féliations, vous avez démarré le projet en local ! 🎉 Il ne reste plus qu'a coder ! 🚀

@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  app:
+    platform: "linux/amd64"
+    build:
+      context: ../../photo-sharing
+      dockerfile: ../docker/production/Dockerfile
+      args:
+        NEXT_PUBLIC_CLIENTVAR: "clientvar"
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    image: t3-app
+    environment:
+      - DATABASE_URL=file:./db.sqlite
+    env_file:
+      - ../../photo-sharing/.env
+  docs:
+    platform: "linux/amd64"
+    build:
+      context: ../../docs
+      dockerfile: ../docker/production/docs.dockerfile
+    working_dir: /app
+    ports:
+      - "3002:3000"
+    image: docs

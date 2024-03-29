@@ -1,0 +1,49 @@
+image: node:20-alpine
+
+stages:
+  - lint
+  - build
+
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .pnpm-store
+
+before_script:
+  - corepack enable
+  - corepack prepare pnpm@latest-8 --activate
+  - pnpm config set store-dir .pnpm-store
+
+lint-docs:
+  stage: lint
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run lint
+
+lint-project:
+  stage: lint
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run lint
+
+build-docs:
+  stage: build
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run build
+  needs:
+    - lint-docs
+
+build-project:
+  stage: build
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run build
+  needs:
+    - lint-project

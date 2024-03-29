@@ -1,0 +1,14 @@
+{
+	"index": "Introduction",
+	"typescript": "TypeScript",
+	"trpc": "API TRPC",
+	"authentification": "Authentification",
+	"database": "Base de données",
+	"cryptography": "Cryptographie",
+	"analyseCode": "Analyse code source",
+	"ci": "Intégration continue",
+	"about": {
+		"title": "About",
+		"type": "page"
+	}
+}
