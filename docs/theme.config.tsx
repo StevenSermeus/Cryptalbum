@@ -4,7 +4,7 @@ import { DocsThemeConfig } from "nextra-theme-docs";
 const config: DocsThemeConfig = {
 	logo: <span>📑 Documentation</span>,
 	project: {
-		link: "https://github.com/shuding/nextra-docs-template",
+		link: "https://gitlab.com/StevenSermeus/projet-unamur-secu-app",
 	},
 	docsRepositoryBase: "https://gitlab.com/StevenSermeus/projet-unamur-secu-app",
 	footer: {

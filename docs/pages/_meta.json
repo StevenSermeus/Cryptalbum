@@ -5,6 +5,7 @@
 	"authentification": "Authentification",
 	"database": "Base de données",
 	"cryptography": "Cryptographie",
+	"logging": "Gestion des logs",
 	"analyseCode": "Analyse code source",
 	"ci": "Intégration continue",
 	"about": {
