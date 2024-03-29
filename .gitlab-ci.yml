@@ -3,6 +3,7 @@ image: node:20-alpine
 stages:
   - lint
   - build
+  - pages
 
 cache:
   key:
@@ -36,8 +37,13 @@ build-docs:
     - cd docs
     - pnpm install
     - pnpm run build
+    - pnpm run export
+    - mv out ../out
   needs:
     - lint-docs
+  artifacts:
+    paths:
+      - ./out
 
 build-project:
   stage: build
@@ -47,3 +53,18 @@ build-project:
     - pnpm run build
   needs:
     - lint-project
+
+pages:
+  only:
+    - main
+  before_script:
+    - echo "Deploying!"
+  stage: pages
+  image: alpine:latest
+  script:
+    - mv out public
+  dependencies:
+    - build-docs
+  artifacts:
+    paths:
+      - ./public
