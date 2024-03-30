@@ -1,8 +1,7 @@
 image: node:20-alpine
 
 stages:
-  - typecheck
-  - lint
+  - validate
   - build
   - pages
 
@@ -19,28 +18,28 @@ before_script:
   - pnpm config set store-dir .pnpm-store
 
 typecheck-docs:
-  stage: typecheck
+  stage: validate
   script:
     - cd docs
     - pnpm install
     - pnpm run typecheck
 
 typecheck-project:
-  stage: typecheck
+  stage: validate
   script:
     - cd docs
     - pnpm install
     - pnpm run typecheck
 
 lint-docs:
-  stage: lint
+  stage: validate
   script:
     - cd docs
     - pnpm install
     - pnpm run lint
 
 lint-project:
-  stage: lint
+  stage: validate
   script:
     - cd docs
     - pnpm install
@@ -56,6 +55,7 @@ build-docs:
     - mv out ../out
   needs:
     - lint-docs
+    - typecheck-docs
   artifacts:
     paths:
       - ./out
@@ -68,6 +68,7 @@ build-project:
     - pnpm run build
   needs:
     - lint-project
+    - typecheck-project
 
 pages:
   only:
