@@ -4,7 +4,7 @@ Typescript est un super set de JavaScript qui permet de typer les variables, les
 
 ```js
 function multiply(a, b) {
-	return a * b;
+  return a * b;
 }
 
 multiply(2, 3); // 6 (number)
@@ -18,7 +18,7 @@ Et non Jamy, Javascript ne prévient pas. Il est faiblement typé et ne vérifie
 
 ```ts
 function multiply(a: number, b: number): number {
-	return a * b;
+  return a * b;
 }
 
 multiply(2, 3); // 6 (number)
@@ -32,30 +32,30 @@ Il est possible de faire bien plus de choses avec TypeScript, comme créer des i
 
 ```ts
 enum Color {
-	Red = "RED",
-	Green = "GREEN",
-	Blue = "BLUE",
+  Red = "RED",
+  Green = "GREEN",
+  Blue = "BLUE",
 }
 
 interface Person {
-	firstName: string;
-	lastName: string;
-	age: number;
-	favoriteColor?: Color;
+  firstName: string;
+  lastName: string;
+  age: number;
+  favoriteColor?: Color;
 }
 
 function greet(person: Person): string {
-	if (person.favoriteColor) {
-		return `Hello ${person.firstName} ${person.lastName}, your favorite color is ${person.favoriteColor}`;
-	}
-	return `Hello ${person.firstName} ${person.lastName}`;
+  if (person.favoriteColor) {
+    return `Hello ${person.firstName} ${person.lastName}, your favorite color is ${person.favoriteColor}`;
+  }
+  return `Hello ${person.firstName} ${person.lastName}`;
 }
 
 const person = {
-	firstName: "John",
-	lastName: "Doe",
-	age: 30,
-	favoriteColor: Color.Blue,
+  firstName: "John",
+  lastName: "Doe",
+  age: 30,
+  favoriteColor: Color.Blue,
 };
 
 greet(person); // Hello John Doe your favorite color is BLUE
