@@ -1,6 +1,7 @@
 image: node:20-alpine
 
 stages:
+  - typecheck
   - lint
   - build
   - pages
@@ -16,6 +17,20 @@ before_script:
   - corepack enable
   - corepack prepare pnpm@latest-8 --activate
   - pnpm config set store-dir .pnpm-store
+
+typecheck-docs:
+  stage: typecheck
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run typecheck
+
+typecheck-project:
+  stage: typecheck
+  script:
+    - cd docs
+    - pnpm install
+    - pnpm run typecheck
 
 lint-docs:
   stage: lint
