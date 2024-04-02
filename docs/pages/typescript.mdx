@@ -1,1 +1,62 @@
-# TypeScript
+# TypeScript ke paso ?
+
+Typescript est un super set de JavaScript qui permet de typer les variables, les fonctions, les classes, les interfaces, etc. Il permet de détecter des erreurs de typage à la compilation et d'offrir une meilleure autocomplétion dans les IDE.
+
+```js
+function multiply(a, b) {
+  return a * b;
+}
+
+multiply(2, 3); // 6 (number)
+multiply("2", 3); // 6 (number) 😱
+multiply("Salut", 3); // NaN 😱
+```
+
+Oh non, on a un bug ! 😱 Et oh Javascript préviens moi non ?
+
+Et non Jamy, Javascript ne prévient pas. Il est faiblement typé et ne vérifie pas le typage des variables. C'est là que TypeScript intervient.
+
+```ts
+function multiply(a: number, b: number): number {
+  return a * b;
+}
+
+multiply(2, 3); // 6 (number)
+multiply("2", 3); // Error: Argument of type 'string' is not assignable to parameter of type 'number'
+multiply("Salut", 3); // Error: Argument of type 'string' is not assignable to parameter of type 'number'
+```
+
+Avec TypeScript, on a ajouté des types aux paramètres de la fonction `multiply`. Maintenant, TypeScript nous prévient si on essaye de passer un type incorrect à la fonction.
+
+Il est possible de faire bien plus de choses avec TypeScript, comme créer des interfaces, des classes, des enums, des generics, etc. TypeScript est un outil très puissant qui permet de créer des applications plus robustes et plus maintenables.
+
+```ts
+enum Color {
+  Red = "RED",
+  Green = "GREEN",
+  Blue = "BLUE",
+}
+
+interface Person {
+  firstName: string;
+  lastName: string;
+  age: number;
+  favoriteColor?: Color;
+}
+
+function greet(person: Person): string {
+  if (person.favoriteColor) {
+    return `Hello ${person.firstName} ${person.lastName}, your favorite color is ${person.favoriteColor}`;
+  }
+  return `Hello ${person.firstName} ${person.lastName}`;
+}
+
+const person = {
+  firstName: "John",
+  lastName: "Doe",
+  age: 30,
+  favoriteColor: Color.Blue,
+};
+
+greet(person); // Hello John Doe your favorite color is BLUE
+```
