@@ -1,4 +1,4 @@
 {
-	"prisma": "Prisma",
-	"sqlite": "SQLite"
+  "prisma": "Prisma",
+  "sqlite": "SQLite"
 }

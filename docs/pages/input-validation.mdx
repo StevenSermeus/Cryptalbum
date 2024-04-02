@@ -1,0 +1,67 @@
+# Validation des entrées
+
+Il est important de valider les entrées de l'utilisateur pour éviter les attaques de type [injection SQL](https://fr.wikipedia.org/wiki/Injection_SQL) ou [Cross-Site Scripting (XSS)](https://fr.wikipedia.org/wiki/Cross-site_scripting) ainsi que pour garantir le bon fonctionnement de l'application.
+
+Il existe plusieurs façons de valider les entrées de l'utilisateur :
+
+- **Validation côté client** : effectuée par le navigateur de l'utilisateur. Elle permet de donner un retour immédiat à l'utilisateur. Par exemple, si l'utilisateur oublie de remplir un champ obligatoire, le navigateur peut afficher un message d'erreur.
+- **Validation côté serveur** : effectuée par le serveur. Elle permet de garantir que les données reçues sont correctes et de les nettoyer si nécessaire.
+
+Il est important de valider les entrées côté serveur car la validation côté client peut être contournée par un utilisateur malveillant. Mais ce n'est pas une raison pour négliger la validation côté client, qui permet d'améliorer l'expérience utilisateur.
+
+## The all mighty Zod
+
+[Zod](https://zod.dev/) est une bibliothèque de validation de schémas TypeScript. Elle permet de définir des schémas de validation pour les objets et les chaînes de caractères et de les valider facilement. De plus, Zod permet de générer les types TypeScript correspondant aux schémas de validation, ce qui permet de bénéficier de la vérification de type de TypeScript.
+
+Voici un exemple d'utilisation de Zod :
+
+```typescript
+import { z } from "zod";
+
+const userSchema = z.object({
+  name: z.string().min(2).max(20),
+  age: z.number().int().min(0).max(120),
+});
+
+const user = userSchema.parse({
+  name: "Steven",
+  age: 30,
+});
+
+console.log(user); // { name: 'Steven', age: 30 }
+
+try {
+  userSchema.parse({
+    name: "S",
+    age: 30,
+  });
+} catch (error) {
+  console.error(error.errors);
+  /* [
+      {
+        "code": "too_small",
+        "minimum": 2,
+        "type": "string",
+        "inclusive": true,
+        "exact": false,
+        "message": "String must contain at least 2 character(s)",
+        "path": [
+          "name"
+        ]
+      }
+    ]
+  */
+}
+```
+
+Il existe une multitude de méthodes de validation disponibles dans Zod, comme `min`, `max`, `email`, `url`, `uuid`, `optional`, `array`, `object`, etc. Vous pouvez consulter la [documentation de Zod](https://zod.dev/) pour en savoir plus.
+
+## Validation côté client avec react-hook-form et Zod
+
+[react-hook-form](https://react-hook-form.com/) est une bibliothèque de gestion de formulaires pour React. Elle permet de gérer les formulaires de manière performante et flexible. react-hook-form est compatible avec Zod, ce qui permet de valider les entrées côté client en utilisant Zod.
+
+Pour avoir un exemple concret, il est possible de se référer à l'exemple présent sur le site de [shadcn/ui](https://ui.shadcn.com/docs/components/form)
+
+## Validation côté serveur avec Zod
+
+Zod sera utilisé en collaboration avec tRPC ce qui sera donc abordé dans cette [section](../trpc)
