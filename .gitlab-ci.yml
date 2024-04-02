@@ -17,58 +17,20 @@ before_script:
   - corepack prepare pnpm@latest-8 --activate
   - pnpm config set store-dir .pnpm-store
 
-typecheck-docs:
+lint:
   stage: validate
   script:
-    - cd docs
-    - pnpm install
-    - pnpm run typecheck
-
-typecheck-project:
-  stage: validate
-  script:
-    - cd docs
-    - pnpm install
-    - pnpm run typecheck
-
-lint-docs:
-  stage: validate
-  script:
-    - cd docs
     - pnpm install
     - pnpm run lint
 
-lint-project:
-  stage: validate
-  script:
-    - cd docs
-    - pnpm install
-    - pnpm run lint
-
-build-docs:
+build:
   stage: build
   script:
-    - cd docs
     - pnpm install
-    - pnpm run build
-    - pnpm run export
-    - mv out ../out
-  needs:
-    - lint-docs
-    - typecheck-docs
+    - pnpm run build --filter=docs
   artifacts:
     paths:
-      - ./out
-
-build-project:
-  stage: build
-  script:
-    - cd docs
-    - pnpm install
-    - pnpm run build
-  needs:
-    - lint-project
-    - typecheck-project
+      - ./apps/docs/out
 
 pages:
   only:
@@ -78,9 +40,9 @@ pages:
   stage: pages
   image: alpine:latest
   script:
-    - mv out public
+    - mv ./apps/docs/out public
   dependencies:
-    - build-docs
+    - build
   artifacts:
     paths:
       - ./public
