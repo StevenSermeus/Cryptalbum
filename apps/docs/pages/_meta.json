@@ -1,0 +1,17 @@
+{
+	"index": "Introduction",
+	"typescript": "TypeScript",
+	"nextjs": "Next.js",
+	"input-validation": "Validation des entrées",
+	"trpc": "API TRPC",
+	"authentification": "Authentification",
+	"database": "Base de données",
+	"cryptography": "Cryptographie",
+	"logging": "Gestion des logs",
+	"analyseCode": "Analyse code source",
+	"ci": "Intégration continue",
+	"about": {
+		"title": "About",
+		"type": "page"
+	}
+}

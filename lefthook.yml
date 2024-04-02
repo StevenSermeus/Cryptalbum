@@ -1,15 +1,7 @@
 pre-commit:
   parallel: true
   commands:
-    eslint-docs:
-      run: cd docs && pnpm run lint
-    format-docs:
-      run: cd docs && pnpm run format
-    typecheck-docs:
-      run: cd docs && pnpm run typecheck
-    eslint:
-      run: cd photo-sharing && pnpm run lint
+    lint:
+      run: pnpm run lint
     format:
-      run: cd photo-sharing && pnpm run format
-    typecheck:
-      run: cd photo-sharing && pnpm run typecheck
+      run: pnpm run format
