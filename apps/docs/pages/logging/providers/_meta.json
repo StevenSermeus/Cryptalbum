@@ -1,0 +1,5 @@
+{
+  "console": "Console provider",
+  "file": "File provider",
+  "discord": "Discord provider"
+}
