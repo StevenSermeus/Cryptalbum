@@ -1,5 +1,6 @@
 {
 	"index": "Introduction",
+	"architecture": "Architecture",
 	"typescript": "TypeScript",
 	"nextjs": "Next.js",
 	"input-validation": "Validation des entrées",

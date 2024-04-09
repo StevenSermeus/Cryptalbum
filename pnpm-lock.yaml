@@ -146,8 +146,8 @@ importers:
         specifier: next
         version: 11.0.0-rc.329
       logcm:
-        specifier: ^1.1.6
-        version: 1.1.7
+        specifier: ^2.0.0
+        version: 2.0.0
       next:
         specifier: ^14.1.3
         version: 14.1.4(react-dom@18.2.0)(react@18.2.0)
@@ -5381,16 +5381,6 @@ packages:
 
   /lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-
-  /logcm@1.1.7:
-    resolution: {integrity: sha512-1oEo6IVvJuq/nmkqYDiOdxIG/EB+yQ15ca1RsuSESvn4TsynFaTyJHZleQuHjJdP6puXcPpPLtPIxDPhdMnCYA==}
-    dependencies:
-      chalk: 4.1.2
-      express: 4.19.2
-      zod: 3.22.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /logcm@2.0.0:
     resolution: {integrity: sha512-2Jx25pI/06EIurVbrtYIwrigxJ9l39507JbjZDyR3vvgv7e/izkTx+gjprd2HL2taBn2EyZlTkQgmH0C/3QN3g==}
