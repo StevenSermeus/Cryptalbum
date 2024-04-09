@@ -31,6 +31,7 @@ export const env = createEnv({
     REDIS_PASSWORD: z.string(),
     RATE_LIMIT_WINDOW: z.number().default(60),
     RATE_LIMIT_MAX: z.number().default(1000),
+    HMAC_SECRET: z.string(),
   },
 
   /**
@@ -55,6 +56,7 @@ export const env = createEnv({
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,
     RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW ?? "60", 10),
     RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX ?? "1000", 10),
+    HMAC_SECRET: process.env.HMAC_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
