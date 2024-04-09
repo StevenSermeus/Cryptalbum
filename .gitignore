@@ -36,3 +36,9 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# docker
+
+postgres_data/
+minio_data/
+redis_data/

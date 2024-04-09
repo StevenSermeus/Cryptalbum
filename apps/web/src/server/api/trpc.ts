@@ -14,8 +14,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { getServerAuthSession } from "@/server/auth";
-import { db } from "@/server/db";
-
+import { db, cache } from "@/server/db";
+import { env } from "@/env";
 /**
  * 1. CONTEXT
  *
@@ -26,6 +26,7 @@ import { db } from "@/server/db";
 
 interface CreateContextOptions {
   session: Session | null;
+  ip: string;
 }
 
 /**
@@ -42,6 +43,8 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     db,
+    cache,
+    ip: opts.ip,
   };
 };
 
@@ -56,9 +59,17 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const forwarededFor = req.headers["x-forwarded-for"];
+  const ip = forwarededFor
+    ? (typeof forwarededFor === "string"
+        ? forwarededFor
+        : forwarededFor[0]
+      )?.split(/, /)[0]
+    : req.socket.remoteAddress;
 
   return createInnerTRPCContext({
     session,
+    ip: ip ?? "127.0.0.1",
   });
 };
 
@@ -133,3 +144,16 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+export const rateLimitedMiddleware = t.middleware(
+  async ({ path, ctx, next }) => {
+    const res = await ctx.cache.incr(`${path}:${ctx.ip}`);
+    if (res === 1) {
+      await ctx.cache.expire(`${path}:${ctx.ip}`, env.RATE_LIMIT_WINDOW);
+    }
+    if (res > env.RATE_LIMIT_MAX) {
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+    }
+    return next({ ctx });
+  },
+);

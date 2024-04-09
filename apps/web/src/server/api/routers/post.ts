@@ -4,10 +4,12 @@ import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
+  rateLimitedMiddleware,
 } from "@/server/api/trpc";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
+    .use(rateLimitedMiddleware)
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
       return {

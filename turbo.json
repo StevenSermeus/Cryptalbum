@@ -9,7 +9,11 @@
 		"VERCEL_URL",
 		"NEXTAUTH_URL",
 		"VERCEL",
-		"PORT"
+		"PORT",
+		"REDIS_URL",
+		"REDIS_PASSWORD",
+		"RATE_LIMIT_WINDOW",
+		"RATE_LIMIT_MAX"
 	],
 	"pipeline": {
 		"build": {

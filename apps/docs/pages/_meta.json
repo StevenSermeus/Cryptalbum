@@ -6,6 +6,7 @@
 	"trpc": "API TRPC",
 	"authentification": "Authentification",
 	"database": "Base de données",
+	"rate-limit": "Rate limiting",
 	"cryptography": "Cryptographie",
 	"logging": "Gestion des logs",
 	"analyseCode": "Analyse code source",
