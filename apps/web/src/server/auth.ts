@@ -5,6 +5,7 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { type Adapter } from "next-auth/adapters";
 
 import { db } from "@/server/db";
@@ -38,16 +39,56 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    // session: ({ session, user }) => ({
+    //   ...session,
+    //   user: {
+    //     ...session.user,
+    //     id: user.id,
+    //   },
+    // }),
+    async jwt({ token }) {
+      return token;
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { type: "email" },
+        challenge: { type: "text" },
+        challengeId: { type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials) {
+          return null;
+        }
+        if (!credentials.challengeId || !credentials.challenge) {
+          return null;
+        }
+        const challenge = await db.userDeviceChallenge.findFirst({
+          where: {
+            id: credentials.challengeId,
+            challenge: credentials.challenge,
+          },
+          include: {
+            userDevice: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        if (!challenge) {
+          return null;
+        }
+        return {
+          id: challenge.userDevice.userId,
+          email: credentials.email,
+          name: challenge.userDevice.user.name,
+        };
+      },
+    }),
     /**
      * ...add more providers here.
      *
@@ -58,6 +99,15 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+  },
+  pages: {
+    signIn: "/auth/signin",
+  },
 };
 
 /**

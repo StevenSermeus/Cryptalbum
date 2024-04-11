@@ -14,8 +14,6 @@ const globalForPrisma = globalThis as unknown as {
 
 export const db = globalForPrisma.prisma ?? createPrismaClient();
 
-if (env.NODE_ENV !== "production") globalForPrisma.prisma = db;
-
 const createRedisClient = () => {
   const client = createClient();
   client.on("error", (error) => {
@@ -36,3 +34,6 @@ const globalForRedis = globalThis as unknown as {
 };
 
 export const cache = globalForRedis.redis ?? createRedisClient();
+
+if (env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+if (env.NODE_ENV !== "production") globalForRedis.redis = cache;
