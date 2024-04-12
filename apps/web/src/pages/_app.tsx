@@ -10,6 +10,7 @@ import { api } from "@/utils/api";
 import "@/styles/globals.css";
 import { CommandMenu } from "@/components/CommandMenu";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { useState } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,6 +21,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+  const [open, setOpen] = useState(false);
   return (
     <SessionProvider session={session}>
       <main className={`font-sans ${inter.variable}`}>
@@ -30,7 +32,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
           disableTransitionOnChange
         >
           <Navigation />
-          <CommandMenu />
           <ToastContainer />
           <Component {...pageProps} />
         </ThemeProvider>

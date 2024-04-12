@@ -13,6 +13,9 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { Input } from "./ui/input";
+import { CommandMenu } from "./CommandMenu";
+import { useSession } from "next-auth/react";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -53,10 +56,22 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 export function Navigation() {
+  const session = useSession();
   return (
     <NavigationMenu className="mx-auto">
       <NavigationMenuList>
         <NavigationMenuItem>
+          {session.data ? (
+            <NavigationMenuLink href="/" className="font-bold">
+              Welcome, {session.data.user.name}
+            </NavigationMenuLink>
+          ) : (
+            <></>
+          )}
+          <NavigationMenuLink
+            href="/"
+            className="font-bold"
+          ></NavigationMenuLink>
           <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
@@ -113,7 +128,9 @@ export function Navigation() {
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <CommandKey />
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+            <CommandMenu />
+          </div>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
@@ -145,19 +162,3 @@ const ListItem = React.forwardRef<
   );
 });
 ListItem.displayName = "ListItem";
-
-function CommandKey() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  return (
-    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-      <span className="text-xs">
-        {isClient && navigator.userAgent.includes("Mac OS X") ? "⌘" : "Ctrl"}
-      </span>
-      k
-    </kbd>
-  );
-}
