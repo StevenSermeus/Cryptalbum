@@ -77,28 +77,8 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      const currentChallenge = await ctx.db.userDeviceChallenge.findFirst({
-        where: {
-          userDevice: {
-            publicKey,
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-
       const key = await importRsaPublicKey(userDevice.publicKey);
-      if (
-        currentChallenge?.expires &&
-        currentChallenge.expires > new Date() &&
-        !currentChallenge.isValidated
-      ) {
-        return {
-          challengerId: currentChallenge.id,
-          challenge: await encrypt(key, currentChallenge.challenge),
-        };
-      }
+
       const challenge = randomBytes(64).toString("hex");
       const deviceChallenge = await ctx.db.userDeviceChallenge.create({
         data: {
