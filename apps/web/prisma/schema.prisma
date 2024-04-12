@@ -65,6 +65,7 @@ model UserDevice{
     userId String
     publicKey String @unique
     name String
+    lastLogin DateTime?
     createdAt DateTime @default(now())
     isTrusted Boolean @default(false)
     updatedAt DateTime @updatedAt

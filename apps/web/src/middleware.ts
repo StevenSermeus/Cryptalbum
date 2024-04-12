@@ -20,4 +20,4 @@ export default withAuth(
   },
 );
 // Match a route like `/demo`
-export const config = { matcher: ["/demo"] };
+export const config = { matcher: ["/addDevice"] };

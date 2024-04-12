@@ -97,3 +97,8 @@ export async function decrypt(
   );
   return new TextDecoder().decode(decrypted);
 }
+
+export function clearKeyPair() {
+  localStorage.removeItem("publicKey");
+  localStorage.removeItem("privateKey");
+}

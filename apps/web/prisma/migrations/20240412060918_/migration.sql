@@ -50,7 +50,9 @@ CREATE TABLE "UserDevice" (
     "userId" TEXT NOT NULL,
     "publicKey" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "lastLogin" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "isTrusted" BOOLEAN NOT NULL DEFAULT false,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "UserDevice_pkey" PRIMARY KEY ("id")
@@ -61,6 +63,7 @@ CREATE TABLE "UserDeviceChallenge" (
     "id" TEXT NOT NULL,
     "challenge" TEXT NOT NULL,
     "userDeviceId" TEXT NOT NULL,
+    "isValidated" BOOLEAN NOT NULL DEFAULT false,
     "expires" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

@@ -115,7 +115,14 @@ export const authOptions: NextAuthOptions = {
         if (!challenge.userDevice.isTrusted) {
           return null;
         }
-        console.log(challenge.userDevice.id);
+        await db.userDevice.update({
+          where: {
+            id: challenge.userDevice.id,
+          },
+          data: {
+            lastLogin: new Date(),
+          },
+        });
         return {
           id: challenge.userDevice.id,
           email: credentials.email,

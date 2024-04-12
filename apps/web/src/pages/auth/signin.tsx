@@ -14,7 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/utils/api";
 import { useEffect, useState } from "react";
-import { decrypt, exportAsymmetricalKey, loadKeyPair } from "@/utils/crypto";
+import {
+  clearKeyPair,
+  decrypt,
+  exportAsymmetricalKey,
+  loadKeyPair,
+} from "@/utils/crypto";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 interface Props {
@@ -40,7 +45,11 @@ export default function Login({ csrfToken }: Props) {
         { publicKey },
         {
           onError: (error) => {
-            toast.error(error.message);
+            //if 404
+            if (error.data?.code === "NOT_FOUND") {
+              clearKeyPair();
+              router.push("/auth/register");
+            }
           },
         },
       );
