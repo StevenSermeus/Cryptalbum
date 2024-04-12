@@ -115,8 +115,9 @@ export const authOptions: NextAuthOptions = {
         if (!challenge.userDevice.isTrusted) {
           return null;
         }
+        console.log(challenge.userDevice.id);
         return {
-          id: challenge.userDevice.userId,
+          id: challenge.userDevice.id,
           email: credentials.email,
           name: challenge.userDevice.user.name,
         };

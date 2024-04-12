@@ -133,8 +133,17 @@ export const publicProcedure = t.procedure;
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  const userDevice = await ctx.db.userDevice.findFirst({
+    where: { userId: ctx.session.user.id },
+  });
+  if (!userDevice) {
+    throw new TRPCError({ code: "BAD_REQUEST" });
+  }
+  if (!userDevice.isTrusted) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
