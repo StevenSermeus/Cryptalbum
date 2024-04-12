@@ -35,16 +35,31 @@ export default function Login({ csrfToken }: Props) {
       return;
     }
     const publicKey = await exportAsymmetricalKey(keyPair.publicKey);
-    const challenge = await challengeMutation.mutateAsync({ publicKey });
-    const buffer = Buffer.from(challenge.challenge, "hex");
-    const decryptedChallenge = await decrypt(keyPair.privateKey, buffer.buffer);
-    setChallengeId(challenge.challengerId);
-    setDecriptedChallenge(decryptedChallenge);
+    try {
+      const challenge = await challengeMutation.mutateAsync(
+        { publicKey },
+        {
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        },
+      );
+      const buffer = Buffer.from(challenge.challenge, "hex");
+      const decryptedChallenge = await decrypt(
+        keyPair.privateKey,
+        buffer.buffer,
+      );
+      setChallengeId(challenge.challengerId);
+      setDecriptedChallenge(decryptedChallenge);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   useEffect(() => {
     validChallenge();
   }, []);
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -79,7 +94,7 @@ export default function Login({ csrfToken }: Props) {
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
+            <Link href="/auth/register" className="underline">
               Sign up
             </Link>
           </div>

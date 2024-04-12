@@ -26,10 +26,17 @@ declare module "next-auth" {
     };
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    id: string;
+    // ...other properties
+    // role: UserRole;
+  }
+}
+
+declare module "next-auth/jwt" {
+  export interface JWT {
+    id: string;
+  }
 }
 
 /**
@@ -39,14 +46,19 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    // session: ({ session, user }) => ({
-    //   ...session,
-    //   user: {
-    //     ...session.user,
-    //     id: user.id,
-    //   },
-    // }),
-    async jwt({ token }) {
+    session(data) {
+      const user = data.session.user;
+      const session = data.session;
+      if (user) {
+        session.user = user;
+      }
+      return session;
+    },
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+      }
       return token;
     },
   },
@@ -79,7 +91,28 @@ export const authOptions: NextAuthOptions = {
             },
           },
         });
+        if (
+          !challenge ||
+          challenge.isValidated ||
+          !(challenge.expires > new Date())
+        ) {
+          return null;
+        }
+        if (challenge.userDevice.user.email !== credentials.email) {
+          return null;
+        }
+        await db.userDeviceChallenge.update({
+          where: {
+            id: credentials.challengeId,
+          },
+          data: {
+            isValidated: true,
+          },
+        });
         if (!challenge) {
+          return null;
+        }
+        if (!challenge.userDevice.isTrusted) {
           return null;
         }
         return {

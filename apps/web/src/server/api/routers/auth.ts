@@ -37,6 +37,7 @@ export const authRouter = createTRPCRouter({
               devices: {
                 create: {
                   name: deviceName,
+                  isTrusted: true,
                   publicKey,
                 },
               },
@@ -53,6 +54,7 @@ export const authRouter = createTRPCRouter({
       },
     ),
   challenge: publicProcedure
+    .use(rateLimitedMiddleware)
     .input(
       z.object({
         publicKey: z.string(),
@@ -68,6 +70,13 @@ export const authRouter = createTRPCRouter({
           message: "Device not found",
         });
       }
+      if (!userDevice.isTrusted) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Device is not trusted",
+        });
+      }
+
       const currentChallenge = await ctx.db.userDeviceChallenge.findFirst({
         where: {
           userDevice: {
@@ -78,20 +87,24 @@ export const authRouter = createTRPCRouter({
           createdAt: "desc",
         },
       });
+
       const key = await importRsaPublicKey(userDevice.publicKey);
-      if (currentChallenge?.expires && currentChallenge.expires > new Date()) {
+      if (
+        currentChallenge?.expires &&
+        currentChallenge.expires > new Date() &&
+        !currentChallenge.isValidated
+      ) {
         return {
           challengerId: currentChallenge.id,
           challenge: await encrypt(key, currentChallenge.challenge),
         };
       }
-      const challenge = [...Array(32)]
-        .map(() => Math.random().toString(36)[2])
-        .join("");
+      const challenge = randomBytes(64).toString("hex");
       const deviceChallenge = await ctx.db.userDeviceChallenge.create({
         data: {
           challenge,
           expires: new Date(Date.now() + 1000 * 60 * 5),
+          isValidated: false,
           userDevice: {
             connect: {
               publicKey,
