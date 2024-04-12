@@ -9,6 +9,7 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 import { CommandMenu } from "@/components/CommandMenu";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,10 +23,17 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <main className={`font-sans ${inter.variable}`}>
-        <Navigation />
-        <CommandMenu />
-        <ToastContainer />
-        <Component {...pageProps} />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navigation />
+          <CommandMenu />
+          <ToastContainer />
+          <Component {...pageProps} />
+        </ThemeProvider>
       </main>
     </SessionProvider>
   );

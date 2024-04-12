@@ -41,6 +41,7 @@ export default function Login({ csrfToken }: Props) {
     }
     const publicKey = await exportAsymmetricalKey(keyPair.publicKey);
     try {
+      if (!publicKey) return;
       const challenge = await challengeMutation.mutateAsync(
         { publicKey },
         {
