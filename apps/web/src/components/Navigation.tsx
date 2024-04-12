@@ -1,8 +1,9 @@
+"use client";
 import * as React from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-
+import { useState, useEffect } from "react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -146,15 +147,15 @@ const ListItem = React.forwardRef<
 ListItem.displayName = "ListItem";
 
 function CommandKey() {
-  //based on user agent
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   return (
     <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
       <span className="text-xs">
-        {/Mac OS X/.test(navigator.userAgent)
-          ? "⌘"
-          : /Windows NT/.test(navigator.userAgent)
-            ? "Ctrl"
-            : "⌘"}
+        {isClient && navigator.userAgent.includes("Mac OS X") ? "⌘" : "Ctrl"}
       </span>
       k
     </kbd>
