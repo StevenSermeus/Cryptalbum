@@ -21,7 +21,6 @@ import {
   loadKeyPair,
 } from "@/utils/crypto";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
 interface Props {
   csrfToken: string | undefined;
 }
@@ -35,8 +34,6 @@ export default function Login({ csrfToken }: Props) {
   async function validChallenge() {
     const keyPair = await loadKeyPair();
     if (!keyPair) {
-      toast.error("You need to register first.");
-      router.push("/auth/register");
       return;
     }
     const publicKey = await exportAsymmetricalKey(keyPair.publicKey);

@@ -5,7 +5,7 @@ import {
   publicProcedure,
   rateLimitedMiddleware,
 } from "@/server/api/trpc";
-import { importRsaPublicKey, encrypt, decrypt } from "@/utils/crypto";
+import { importRsaPublicKey, encrypt } from "@/utils/crypto";
 import { randomBytes } from "crypto";
 export const authRouter = createTRPCRouter({
   createAccount: publicProcedure

@@ -26,11 +26,11 @@ declare module "next-auth" {
     };
   }
 
-  interface User {
-    id: string;
-    // ...other properties
-    // role: UserRole;
-  }
+  // interface User {
+  //   id: string;
+  //   ...other properties
+  //   role: UserRole;
+  // }
 }
 
 declare module "next-auth/jwt" {

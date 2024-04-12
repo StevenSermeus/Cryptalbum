@@ -34,6 +34,7 @@ const formSchema = z.object({
   deviceName: z.string().min(3, "Device name is too short"),
   name: z.string().min(3, "Name is too short"),
 });
+
 export default function Register() {
   const registerMutation = api.auth.createAccount.useMutation();
   const router = useRouter();

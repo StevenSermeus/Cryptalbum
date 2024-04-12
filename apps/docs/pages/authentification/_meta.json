@@ -1,4 +1,4 @@
 {
-  "nextAuth": "NextAuth",
-  "webAuthn": "WebAuthn"
+	"nextAuth": "NextAuth",
+	"key": "Authentification avec clé asymétrique"
 }

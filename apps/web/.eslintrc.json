@@ -3,6 +3,9 @@
   "root": true,
   "extends": ["@repo/eslint-config/next.js"],
   "parser": "@typescript-eslint/parser",
+  "rules": {
+    "@next/next/no-html-link-for-pages": "off"
+  },
   "parserOptions": {
     "project": true
   }
