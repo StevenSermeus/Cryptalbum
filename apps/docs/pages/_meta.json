@@ -1,19 +1,19 @@
 {
-	"index": "Introduction",
-	"architecture": "Architecture",
-	"typescript": "TypeScript",
-	"nextjs": "Next.js",
-	"input-validation": "Validation des entrées",
-	"trpc": "API TRPC",
-	"authentification": "Authentification",
-	"database": "Base de données",
-	"rate-limit": "Rate limiting",
-	"cryptography": "Cryptographie",
-	"logging": "Gestion des logs",
-	"analyseCode": "Analyse code source",
-	"ci": "Intégration continue",
-	"about": {
-		"title": "About",
-		"type": "page"
-	}
+  "index": "Introduction",
+  "architecture": "Architecture",
+  "typescript": "TypeScript",
+  "nextjs": "Next.js",
+  "input-validation": "Validation des entrées",
+  "trpc": "API TRPC",
+  "authentification": "Authentification",
+  "database": "Base de données",
+  "rate-limit": "Rate limiting",
+  "cryptography": "Cryptographie",
+  "logging": "Gestion des logs",
+  "analyseCode": "Analyse code source",
+  "ci": "Intégration continue",
+  "about": {
+    "title": "About",
+    "type": "page"
+  }
 }

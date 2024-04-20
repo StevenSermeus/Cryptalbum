@@ -18,3 +18,24 @@ sequenceDiagram
 ```
 
 Pourquoi avoir re-chiffré le challenge avec la clé publique du serveur ? Cela permet d'éviter un clair chiffré qui pourrait être intercepté et réutilisé par un attaquant en cas de compromission de la connexion ou du protocole de communication.
+
+# Connection depuis un autre client
+
+```mermaid
+sequenceDiagram
+  participant Client-device-1
+  participant Serveur
+  participant Client-device-2
+
+
+  Client-device-2->>Serveur: Demande d'enregistrement de la clé publique
+  activate Client-device-2
+  activate Serveur
+  Serveur->>Client-device-1: Demande de validation de la clé publique
+  activate Client-device-1
+  Client-device-1->>Serveur: Validation de la clé publique
+  deactivate Client-device-1
+  Client-device-2->>Serveur: Connexion
+  deactivate Client-device-2
+  deactivate Serveur
+```

@@ -1,4 +1,6 @@
 {
   "prisma": "Prisma",
-  "sqlite": "SQLite"
+  "postgres": "PostgreSQL",
+  "redis": "Redis",
+  "minio": "Minio"
 }
