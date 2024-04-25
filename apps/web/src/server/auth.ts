@@ -7,7 +7,7 @@ import {
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { type Adapter } from "next-auth/adapters";
-
+import logger from "@/utils/logger";
 import { db } from "@/server/db";
 
 /**
@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
       const session = data.session;
       if (user) {
         session.user = user;
+        session.user.id = data.token.id;
       }
       return session;
     },
@@ -73,9 +74,11 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials) {
+          logger.error("No credentials provided");
           return null;
         }
         if (!credentials.challengeId || !credentials.challenge) {
+          logger.error("No challengeId or challenge provided");
           return null;
         }
         const challenge = await db.userDeviceChallenge.findFirst({
@@ -91,6 +94,9 @@ export const authOptions: NextAuthOptions = {
             },
           },
         });
+        logger.info(
+          `Logging attemps from deviceId ${challenge?.userDevice.id} with challengeId ${credentials.challengeId} and challenge ${credentials.challenge}`,
+        );
         if (
           !challenge ||
           challenge.isValidated ||
@@ -110,9 +116,13 @@ export const authOptions: NextAuthOptions = {
           },
         });
         if (!challenge) {
+          logger.error(`No challenge found for ${credentials.email}`);
           return null;
         }
         if (!challenge.userDevice.isTrusted) {
+          logger.error(
+            `Device ${challenge.userDevice.id} is not trusted for user ${challenge.userDevice.user.email}`,
+          );
           return null;
         }
         await db.userDevice.update({
@@ -123,6 +133,10 @@ export const authOptions: NextAuthOptions = {
             lastLogin: new Date(),
           },
         });
+        logger.info(
+          `User ${challenge.userDevice.user.email} logged in with device ${challenge.userDevice.id}`,
+        );
+        console.log(challenge.userDevice.id, "Authorized");
         return {
           id: challenge.userDevice.id,
           email: credentials.email,

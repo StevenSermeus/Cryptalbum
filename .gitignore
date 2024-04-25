@@ -42,3 +42,5 @@ yarn-error.log*
 postgres_data/
 minio_data/
 redis_data/
+migrations
+valkey_data

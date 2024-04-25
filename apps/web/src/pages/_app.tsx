@@ -9,6 +9,7 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           disableTransitionOnChange
         >
           <Navigation />
+          <Toaster />
           <ToastContainer />
           <Component {...pageProps} />
         </ThemeProvider>

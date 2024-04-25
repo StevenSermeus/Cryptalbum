@@ -14,8 +14,9 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { getServerAuthSession } from "@/server/auth";
-import { db, cache } from "@/server/db";
+import { db, cache, minio } from "@/server/db";
 import { env } from "@/env";
+import logger from "@/utils/logger";
 /**
  * 1. CONTEXT
  *
@@ -44,6 +45,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
     session: opts.session,
     db,
     cache,
+    minio,
     ip: opts.ip,
   };
 };
@@ -66,7 +68,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
         : forwarededFor[0]
       )?.split(/, /)[0]
     : req.socket.remoteAddress;
-
+  logger.info(`Request from ${ip} for ${req.url}`);
   return createInnerTRPCContext({
     session,
     ip: ip ?? "127.0.0.1",
@@ -135,21 +137,33 @@ export const publicProcedure = t.procedure;
  */
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
+    logger.error("Unauthorized request to protected procedure");
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+  console.log(ctx.session.user.id, "Protected Procedure user id");
   const userDevice = await ctx.db.userDevice.findFirst({
-    where: { userId: ctx.session.user.id },
+    where: { id: ctx.session.user.id },
   });
+
   if (!userDevice) {
+    logger.error(`No user device found for user ${ctx.session.user.id}`);
     throw new TRPCError({ code: "BAD_REQUEST" });
   }
   if (!userDevice.isTrusted) {
+    logger.error(
+      `Request from untrusted device ${userDevice.id} for user ${ctx.session.user.id}`,
+    );
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
   return next({
     ctx: {
       // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
+      session: {
+        ...ctx.session,
+        user: ctx.session.user,
+        userId: userDevice.userId,
+      },
     },
   });
 });
@@ -161,8 +175,9 @@ export const rateLimitedMiddleware = t.middleware(
       await ctx.cache.expire(`${path}:${ctx.ip}`, env.RATE_LIMIT_WINDOW);
     }
     if (res > env.RATE_LIMIT_MAX) {
+      logger.error(`Rate limit exceeded for ${ctx.ip} on ${path}`);
       throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
     }
-    return next({ ctx });
+    return next();
   },
 );
