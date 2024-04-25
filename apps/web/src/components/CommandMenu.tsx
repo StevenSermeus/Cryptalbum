@@ -108,6 +108,14 @@ function NavigationCommandGroup({ setOpen }: NavigationCommandGroupProps) {
       >
         Home
       </CommandItem>
+      <CommandItem
+        onSelect={() => {
+          router.push("/gallery");
+          setOpen(false);
+        }}
+      >
+        Gallery
+      </CommandItem>
     </CommandGroup>
   );
 }

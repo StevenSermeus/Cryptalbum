@@ -19,25 +19,25 @@ Voici un exemple d'utilisation de Zod :
 import { z } from "zod";
 
 const userSchema = z.object({
-  name: z.string().min(2).max(20),
-  age: z.number().int().min(0).max(120),
+	name: z.string().min(2).max(20),
+	age: z.number().int().min(0).max(120),
 });
 
 const user = userSchema.parse({
-  name: "Steven",
-  age: 30,
+	name: "Steven",
+	age: 30,
 });
 
 console.log(user); // { name: 'Steven', age: 30 }
 
 try {
-  userSchema.parse({
-    name: "S",
-    age: 30,
-  });
+	userSchema.parse({
+		name: "S",
+		age: 30,
+	});
 } catch (error) {
-  console.error(error.errors);
-  /* [
+	console.error(error.errors);
+	/* [
       {
         "code": "too_small",
         "minimum": 2,

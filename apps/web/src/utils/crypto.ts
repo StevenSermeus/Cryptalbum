@@ -89,16 +89,71 @@ export async function encrypt(
 export async function decrypt(
   privateKey: CryptoKey,
   data: ArrayBuffer,
-): Promise<string> {
-  const decrypted = await crypto.decrypt(
-    { name: "RSA-OAEP" },
-    privateKey,
-    data,
-  );
-  return new TextDecoder().decode(decrypted);
+): Promise<string | undefined> {
+  try {
+    const decrypted = await crypto.decrypt(
+      { name: "RSA-OAEP" },
+      privateKey,
+      data,
+    );
+    return new TextDecoder().decode(decrypted);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export function clearKeyPair() {
   localStorage.removeItem("publicKey");
   localStorage.removeItem("privateKey");
+}
+
+export async function generateSymmetricalKey(): Promise<CryptoKey> {
+  const key = await crypto.generateKey({ name: "AES-GCM", length: 256 }, true, [
+    "encrypt",
+    "decrypt",
+  ]);
+  return key;
+}
+
+export async function exportSymmetricalKey(key: CryptoKey): Promise<string> {
+  const exportedKey = await crypto.exportKey("jwk", key);
+  return JSON.stringify(exportedKey);
+}
+
+export async function importSymmetricalKey(
+  key: string,
+): Promise<CryptoKey | null> {
+  const importedKey = await crypto.importKey(
+    "jwk",
+    JSON.parse(key),
+    { name: "AES-GCM" },
+    true,
+    ["encrypt", "decrypt"],
+  );
+  return importedKey;
+}
+
+export async function encryptFileSymmetrical(
+  file: File,
+  key: CryptoKey,
+): Promise<ArrayBuffer> {
+  const fileBuffer = await file.arrayBuffer();
+  const encrypted = await crypto.encrypt(
+    { name: "AES-GCM", iv: new Uint8Array(12) },
+    key,
+    fileBuffer,
+  );
+  return encrypted;
+}
+
+export async function decryptFileSymmetrical(
+  file: ArrayBuffer,
+  key: CryptoKey,
+): Promise<ArrayBuffer> {
+  const decrypted = await crypto.decrypt(
+    { name: "AES-GCM", iv: new Uint8Array(12) },
+    key,
+    file,
+  );
+  return decrypted;
 }
