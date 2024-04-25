@@ -44,3 +44,4 @@ minio_data/
 redis_data/
 migrations
 valkey_data
+seq_data

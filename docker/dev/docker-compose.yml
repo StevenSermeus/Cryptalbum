@@ -13,11 +13,14 @@ services:
       MINIO_ROOT_PASSWORD: password
     volumes:
       - ./minio_data:/data
-    # logging:
-    #   driver: "gelf"
-    #   options:
-    #     gelf-address: "udp://seq:12201"
-    #     tag: "minio"
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "minio"
   postgres:
     image: postgres:16
     container_name: postgres_16
@@ -29,11 +32,14 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
-    # logging:
-    #   driver: "gelf"
-    #   options:
-    #     gelf-address: "udp://seq:12201"
-    #     tag: "postgres"
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "postgres"
   #To add password to valeky, you need to mount the config file to the container
   #Valkey is the real open source version of redis ^^
   valkey:
@@ -43,20 +49,32 @@ services:
       - "6379:6379"
     volumes:
       - ./valkey_data:/data
-    # logging:
-    #   driver: "gelf"
-    #   options:
-    #     gelf-address: "udp://seq:12201"
-    #     tag: "valkey"
-  # seq:
-  #   image: datalust/seq:latest
-  #   container_name: seq
-  #   ports:
-  #     - "5341:5341"
-  #     - "8081:80"
-  #   environment:
-  #     ACCEPT_EULA: Y
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./seq_data:/data
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "valkey"
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: "QClVohSl+wWPiOeSZPGg1W/GL/LvZpenKDaQpOspru14nTBT4uzLiAMBZU81NsguhMSKZ0qv7VjSfLaQeiY6MRSrwel9grGujBo50LFlhcOG"
+    volumes:
+      - ./seq_data:/data
+  seqgelf:
+    image: datalust/seq-input-gelf
+    container_name: seq_forwarder
+    environment:
+      SEQ_ADDRESS: "http://seq:5341"
+    ports:
+      - "12201:12201/udp"
+    depends_on:
+      seq:
+        condition: service_started
