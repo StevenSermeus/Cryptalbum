@@ -56,6 +56,7 @@ export default function Login({ csrfToken }: Props) {
         keyPair.privateKey,
         buffer.buffer,
       );
+      if (!decryptedChallenge) return;
       setChallengeId(challenge.challengerId);
       setDecriptedChallenge(decryptedChallenge);
     } catch (error) {

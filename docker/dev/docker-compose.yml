@@ -3,7 +3,7 @@ version: "3.9"
 services:
   minio:
     image: quay.io/minio/minio
-    container_name: minio
+    container_name: minio_dev
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -23,7 +23,7 @@ services:
         tag: "minio"
   postgres:
     image: postgres:16
-    container_name: postgres_16
+    container_name: postgres_16_dev
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "password"
@@ -44,7 +44,7 @@ services:
   #Valkey is the real open source version of redis ^^
   valkey:
     image: valkey/valkey:7.2
-    container_name: valkey_7.2
+    container_name: valkey_7_2_dev
     ports:
       - "6379:6379"
     volumes:
@@ -59,7 +59,7 @@ services:
         tag: "valkey"
   seq:
     image: datalust/seq:latest
-    container_name: seq
+    container_name: seq_dev
     ports:
       - "5341:5341"
       - "8081:80"
@@ -70,7 +70,7 @@ services:
       - ./seq_data:/data
   seqgelf:
     image: datalust/seq-input-gelf
-    container_name: seq_forwarder
+    container_name: seq_forwarder_dev
     environment:
       SEQ_ADDRESS: "http://seq:5341"
     ports:

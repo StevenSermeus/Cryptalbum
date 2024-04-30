@@ -3,24 +3,104 @@ services:
   app:
     platform: "linux/amd64"
     build:
-      context: ../../photo-sharing
-      dockerfile: ../docker/production/Dockerfile
+      context: ../../
+      dockerfile: ./Dockerfile
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
       - "3000:3000"
     image: t3-app
-    environment:
-      - DATABASE_URL=file:./db.sqlite
-    env_file:
-      - ../../photo-sharing/.env
-  docs:
-    platform: "linux/amd64"
-    build:
-      context: ../../docs
-      dockerfile: ../docker/production/docs.dockerfile
-    working_dir: /app
+
+    depends_on:
+      - minio
+      - postgres
+      - valkey
+      - seqgelf
+      - seq
+  # docs:
+  #   platform: "linux/amd64"
+  #   build:
+  #     context: ../../apps/docs
+  #     dockerfile: ../../docker/production/docs.dockerfile
+  #   working_dir: /app
+  #   ports:
+  #     - "3001:3000"
+  #   image: docs
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
     ports:
-      - "3002:3000"
-    image: docs
+      # - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - ./minio_data:/data
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "minio"
+  postgres:
+    image: postgres:16
+    container_name: postgres_16
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "postgres"
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "postgres"
+  #To add password to valeky, you need to mount the config file to the container
+  #Valkey is the real open source version of redis ^^
+  valkey:
+    image: valkey/valkey:7.2
+    container_name: valkey_7.2
+    # ports:
+    #   - "6379:6379"
+    volumes:
+      - ./valkey_data:/data
+    depends_on:
+      seqgelf:
+        condition: service_started
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "valkey"
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: "QClVohSl+wWPiOeSZPGg1W/GL/LvZpenKDaQpOspru14nTBT4uzLiAMBZU81NsguhMSKZ0qv7VjSfLaQeiY6MRSrwel9grGujBo50LFlhcOG"
+    volumes:
+      - ./seq_data:/data
+  seqgelf:
+    image: datalust/seq-input-gelf
+    container_name: seq_forwarder
+    environment:
+      SEQ_ADDRESS: "http://seq:5341"
+    ports:
+      - "12201:12201/udp"
+    depends_on:
+      seq:
+        condition: service_started

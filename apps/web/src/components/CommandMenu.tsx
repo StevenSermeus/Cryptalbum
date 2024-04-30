@@ -20,6 +20,7 @@ export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const session = useSession();
+
   const router = useRouter();
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

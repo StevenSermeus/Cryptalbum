@@ -15,7 +15,11 @@ const globalForPrisma = globalThis as unknown as {
 export const db = globalForPrisma.prisma ?? createPrismaClient();
 
 const createCacheClient = () => {
-  const client = createClient();
+  const client = createClient({
+    socket: {
+      host: env.REDIS_URL,
+    },
+  });
   client.on("error", (error) => {
     console.error("Valkey error: ", error);
   });
