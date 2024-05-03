@@ -140,7 +140,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     logger.error("Unauthorized request to protected procedure");
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  console.log(ctx.session.user.id, "Protected Procedure user id");
+  logger.info(`${ctx.session.user.id} Protected Procedure user id`);
   const userDevice = await ctx.db.userDevice.findFirst({
     where: { id: ctx.session.user.id },
   });
