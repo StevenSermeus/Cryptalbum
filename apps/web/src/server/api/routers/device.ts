@@ -96,9 +96,14 @@ export const deviceRouter = createTRPCRouter({
       if (!device.isTrusted) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
-      return await ctx.db.userDevice.update({
-        where: { id: deviceId },
-        data: { isTrusted: false },
+      await ctx.db.$transaction(async (t) => {
+        await ctx.db.userDevice.update({
+          where: { id: deviceId },
+          data: { isTrusted: false },
+        });
+        await t.shared.deleteMany({
+          where: { user_device: { id: deviceId } },
+        });
       });
     }),
 });
