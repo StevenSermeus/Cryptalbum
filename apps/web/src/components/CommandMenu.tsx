@@ -55,6 +55,25 @@ export function CommandMenu() {
               <CommandItem
                 onSelect={() => {
                   setOpen(false);
+                  router.push("/auth/device");
+                }}
+              >
+                Devices Management
+              </CommandItem>
+            ) : (
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  router.push("/auth/addDevice");
+                }}
+              >
+                Add a new device
+              </CommandItem>
+            )}
+            {session.data ? (
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
                   signOut();
                 }}
               >

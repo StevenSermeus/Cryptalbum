@@ -124,4 +124,19 @@ export const pictureRouter = createTRPCRouter({
       });
     }
   }),
+  getSharedKeys: protectedProcedure
+    .use(rateLimitedMiddleware)
+    .query(async ({ ctx }) => {
+      const sharedKeys = await ctx.db.shared.findMany({
+        where: {
+          userId: ctx.session.user.id,
+        },
+        select: {
+          key: true,
+          id: true,
+        },
+      });
+      console.log(sharedKeys, "sharedKeys");
+      return sharedKeys;
+    }),
 });
