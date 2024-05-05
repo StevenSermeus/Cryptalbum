@@ -101,6 +101,7 @@ export default function Device() {
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Public key</TableHead>
+          <TableHead>Last login</TableHead>
           <TableHead>Is trusted</TableHead>
           <TableHead>Action</TableHead>
         </TableRow>
@@ -123,6 +124,11 @@ export default function Device() {
                   </DialogHeader>
                 </DialogContent>
               </Dialog>
+            </TableCell>
+            <TableCell className="font-medium">
+              {device.lastLogin
+                ? new Date(device.lastLogin).toLocaleString()
+                : "Never"}
             </TableCell>
             <TableCell className="font-medium">
               {device.isTrusted ? "🔥" : "❌"}

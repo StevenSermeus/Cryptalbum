@@ -136,7 +136,6 @@ export const pictureRouter = createTRPCRouter({
           id: true,
         },
       });
-      console.log(sharedKeys, "sharedKeys");
       return sharedKeys;
     }),
 });
