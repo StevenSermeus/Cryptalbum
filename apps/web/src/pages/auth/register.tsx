@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
 import {
+  clearKeyPair,
   exportAsymmetricalKey,
   generateAsymmetricalKeyPair,
   loadKeyPair,
@@ -70,6 +71,7 @@ export default function Register() {
       router.push("/auth/signin");
     } catch (error) {
       toast.error("An error occurred. Please try again.");
+      clearKeyPair();
     }
   }
 

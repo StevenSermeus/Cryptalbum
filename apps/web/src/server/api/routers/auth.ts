@@ -114,4 +114,48 @@ export const authRouter = createTRPCRouter({
         });
       }
     }),
+  addDevice: publicProcedure
+    .use(rateLimitedMiddleware)
+    .input(
+      z.object({
+        email: z.string().email(),
+        publicKey: z.string(),
+        deviceName: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      logger.info(`Adding device for ${input.email}`);
+      const user = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+      try {
+        const device = await ctx.db.userDevice.create({
+          data: {
+            name: input.deviceName,
+            publicKey: input.publicKey,
+            isTrusted: false,
+            user: {
+              connect: {
+                id: user.id,
+              },
+            },
+          },
+        });
+        logger.info(`Device added for ${input.email} with id ${device.id}`);
+      } catch (error) {
+        logger.error(
+          `Failed to add device for ${input.email} with error: ${error}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add device",
+        });
+      }
+    }),
 });

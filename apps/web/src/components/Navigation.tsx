@@ -49,6 +49,50 @@ export function Navigation() {
           )}
         </NavigationMenuItem>
         <NavigationMenuItem>
+          {session.data ? (
+            <Link href="/auth/device" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Devices Management
+              </NavigationMenuLink>
+            </Link>
+          ) : (
+            <></>
+          )}
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          {session.data ? (
+            <></>
+          ) : (
+            <Link href="/auth/addDevice" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Add a device
+              </NavigationMenuLink>
+            </Link>
+          )}
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          {session.data ? (
+            <></>
+          ) : (
+            <Link href="/auth/register" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Register
+              </NavigationMenuLink>
+            </Link>
+          )}
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          {session.data ? (
+            <></>
+          ) : (
+            <Link href="/auth/signin" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Sign in
+              </NavigationMenuLink>
+            </Link>
+          )}
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div>
