@@ -20,7 +20,9 @@
 		"MINIO_SECRET_KEY",
 		"MINIO_ENDPOINT",
 		"MINIO_PORT",
-		"MINIO_USE_SSL"
+		"MINIO_USE_SSL",
+		"SEQ_URL",
+		"LOGGER_SECRET"
 	],
 	"pipeline": {
 		"build": {

@@ -136,7 +136,6 @@ export const authOptions: NextAuthOptions = {
         logger.info(
           `User ${challenge.userDevice.user.email} logged in with device ${challenge.userDevice.id}`,
         );
-        console.log(challenge.userDevice.id, "Authorized");
         return {
           id: challenge.userDevice.id,
           email: credentials.email,

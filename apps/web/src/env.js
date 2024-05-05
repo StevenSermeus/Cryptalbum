@@ -38,6 +38,8 @@ export const env = createEnv({
     MINIO_USE_SSL: z.boolean().default(false),
     MINIO_PORT: z.number().default(9000),
     MINIO_ENDPOINT: z.string().default("localhost"),
+    SEQ_URL: z.string(),
+    LOGGER_SECRET: z.string().optional(),
   },
 
   /**
@@ -74,6 +76,8 @@ export const env = createEnv({
     MINIO_USE_SSL: process.env.MINIO_USE_SSL === "true",
     MINIO_PORT: parseInt(process.env.MINIO_PORT ?? "9000", 10),
     MINIO_ENDPOINT: process.env.MINIO_ENDPOINT,
+    SEQ_URL: process.env.SEQ_URL,
+    LOGGER_SECRET: process.env.LOGGER_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
