@@ -9,11 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  encrypt,
-  importRsaPublicKey,
-  loadKeyPair,
-} from "@/utils/crypto";
+import { encrypt, importRsaPublicKey, loadKeyPair } from "@/utils/crypto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +26,7 @@ export default function FileUploadForm() {
   const { toast } = useToast();
   const { data } = useSession();
 
+  const utils_trpc = api.useUtils();
   const createMutation = api.album.create.useMutation();
   const userDevicesQuery = api.user.userDevice.useQuery(undefined, {
     //Disable query if user is not logged in
@@ -76,11 +73,20 @@ export default function FileUploadForm() {
         });
       }
 
-      await createMutation.mutateAsync({
-        albumName: data.albumName,
-        keys_user_device: userDeviceKey,
-      });
-
+      await createMutation.mutateAsync(
+        {
+          albumName: data.albumName,
+          keys_user_device: userDeviceKey,
+        },
+        {
+          onSuccess: () => {
+            utils_trpc.invalidate(undefined, {
+              refetchType: "all",
+              queryKey: ["albums.getAll"],
+            });
+          },
+        },
+      );
       form.reset();
       toast({
         title: "Album created",
