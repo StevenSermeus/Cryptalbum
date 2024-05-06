@@ -15,6 +15,7 @@ import {
   loadKeyPair,
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
+import { ShareAlbumButton } from "@/components/ShareAlbumButton";
 
 interface IAlbum {
   id: string;
@@ -145,6 +146,11 @@ export default function Dashboard() {
               <UploadFileDialog />
             </div>
             <div className="flex items-center gap-2">
+              {currentAlbum !== "gallerie" &&
+                albums.some((val) => val.id === currentAlbum) && (
+                  <ShareAlbumButton />
+                )
+              }
               <span className="font-semibold">
                 {currentAlbum === "gallerie"
                   ? "Gallerie"
