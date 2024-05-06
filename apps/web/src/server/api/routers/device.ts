@@ -138,6 +138,9 @@ export const deviceRouter = createTRPCRouter({
         await t.shared.deleteMany({
           where: { user_device: { id: deviceId } },
         });
+        await t.sharedAlbum.deleteMany({
+          where: { deviceId: deviceId },
+        });
       });
     }),
 });
