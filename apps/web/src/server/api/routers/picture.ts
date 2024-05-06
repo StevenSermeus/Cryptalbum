@@ -68,8 +68,10 @@ export const pictureRouter = createTRPCRouter({
   share: protectedProcedure.mutation(async () => {
     return "Salut";
   }),
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
+      // TODO: if input = gallery send all, else send the only pictures in album
+      console.log(`input: ${input}`)
       const pictures_user = await ctx.db.picture.findMany({
         where: {
           userId: ctx.session.userId,

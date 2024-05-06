@@ -75,7 +75,18 @@ export const deviceRouter = createTRPCRouter({
               },
             });
           }
+          const deviceAlbums = await t.sharedAlbum.findMany({
+            where: { user_device: { id: ctx.session.user.id } },
+            select: { id: true, albumId: true },
+          });
+          const deviceAlbumsMap = new Map(
+            deviceAlbums.map((a) => [a.albumId, a.id]),
+          );
           for (const album of albumsForDevice) {
+            if (!deviceAlbumsMap.has(album.albumId)) {
+              console.log("album not found", album.albumId, deviceAlbumsMap);
+              throw new TRPCError({ code: "BAD_REQUEST" });
+            }
             await t.sharedAlbum.create({
               data: {
                 albumName: album.albumName,
@@ -126,6 +137,9 @@ export const deviceRouter = createTRPCRouter({
         });
         await t.shared.deleteMany({
           where: { user_device: { id: deviceId } },
+        });
+        await t.sharedAlbum.deleteMany({
+          where: { deviceId: deviceId },
         });
       });
     }),

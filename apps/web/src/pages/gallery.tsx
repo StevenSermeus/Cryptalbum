@@ -26,7 +26,7 @@ interface IAlbum {
 export default function Dashboard() {
   const [albums, setAlbums] = useState<IAlbum[]>([]);
   const [currentAlbum, setCurrentAlbum] = useState("gallerie");
-  const files = api.picture.getAll.useQuery();
+  const files = api.picture.getAll.useQuery(currentAlbum);
   const sharedAlbums = api.album.getAll.useQuery();
   const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
   const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
