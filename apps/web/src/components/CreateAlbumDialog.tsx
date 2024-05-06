@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   encrypt,
+  importRsaPublicKey,
   loadKeyPair,
 } from "@/utils/crypto";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,7 +68,8 @@ export default function FileUploadForm() {
       const userDeviceKey: { deviceId: string; encryptedAlbumName: string }[] = [];
 
       for (const userDevice of userDevicesQuery.data) {
-        const encryptedKey = await encrypt(keyPair.publicKey, data.albumName);
+        const publicKey = await importRsaPublicKey(userDevice.publicKey);
+        const encryptedKey = await encrypt(publicKey, data.albumName);
         userDeviceKey.push({
           deviceId: userDevice.id,
           encryptedAlbumName: encryptedKey,

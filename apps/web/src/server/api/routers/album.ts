@@ -59,7 +59,7 @@ export const albumRouter = createTRPCRouter({
     .use(rateLimitedMiddleware)
     .query(async ({ ctx }) => {
       logger.info(`Getting albums for deviceId ${ctx.session.user.id}`);
-      const sharedalbums = await ctx.db.sharedAlbum.findMany({
+      const sharedAlbums = await ctx.db.sharedAlbum.findMany({
         where: {
           deviceId: ctx.session.user.id,
         },
@@ -67,9 +67,28 @@ export const albumRouter = createTRPCRouter({
           album: true
         }
       });
-      if (!sharedalbums) {
+      if (!sharedAlbums) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
-      return sharedalbums;
+      return sharedAlbums;
+    }),
+
+  getSharedAlbums: protectedProcedure
+    .use(rateLimitedMiddleware)
+    .query(async ({ ctx }) => {
+      logger.info(`Getting shared albums for deviceId ${ctx.session.user.id}`);
+      const sharedAlbums = await ctx.db.sharedAlbum.findMany({
+        where: {
+          deviceId: ctx.session.user.id,
+        },
+        select: {
+          albumName: true,
+          albumId: true
+        }
+      });
+      if (!sharedAlbums) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      return sharedAlbums;
     }),
 });

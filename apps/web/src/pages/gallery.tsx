@@ -57,12 +57,12 @@ export default function Dashboard() {
 
   async function decipherAlbums() {
     const decryptedAlbums: IAlbum[] = [];
-    for (const sharedAlbum of sharedAlbums.data || []) {
-      const keyPair = await loadKeyPair();
-      if (!keyPair) {
-        return;
-      }
+    const keyPair = await loadKeyPair();
+    if (!keyPair) {
+      return;
+    }
 
+    for (const sharedAlbum of sharedAlbums.data || []) {
       const encryptedAlbumName = sharedAlbum.albumName;
       const albumName = await decrypt(
         keyPair.privateKey,

@@ -25,9 +25,15 @@ export const deviceRouter = createTRPCRouter({
             id: z.string(),
           }),
         ),
+        albumsForDevice: z.array(
+          z.object({
+            albumId: z.string(),
+            albumName: z.string(),
+          }),
+        ),
       }),
     )
-    .mutation(async ({ input: { deviceId, keys }, ctx }) => {
+    .mutation(async ({ input: { deviceId, keys, albumsForDevice }, ctx }) => {
       try {
         console.log("trustDevice", deviceId, keys);
         await ctx.db.$transaction(async (t) => {
@@ -66,6 +72,23 @@ export const deviceRouter = createTRPCRouter({
                   },
                 },
                 key: key.key,
+              },
+            });
+          }
+          for (const album of albumsForDevice) {
+            await t.sharedAlbum.create({
+              data: {
+                albumName: album.albumName,
+                user_device: {
+                  connect: {
+                    id: deviceId,
+                  },
+                },
+                album: {
+                  connect: {
+                    id: album.albumId,
+                  },
+                },
               },
             });
           }

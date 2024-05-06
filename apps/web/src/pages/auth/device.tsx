@@ -35,10 +35,15 @@ export default function Device() {
   const devicesKeys = api.picture.getSharedKeys.useQuery(undefined, {
     enabled: !!session.data,
   });
+
+  const sharedAlbums = api.album.getSharedAlbums.useQuery(undefined, {
+    enabled: !!session.data,
+  });
+
   const trustMutation = api.device.trustDevice.useMutation();
   const revokeMutation = api.device.revokeDevice.useMutation();
 
-  async function encryptForNewDevice(
+  async function encryptPictureKeysForNewDevice(
     keys: { key: string; id: string }[],
     publicKey: string,
   ) {
@@ -74,15 +79,60 @@ export default function Device() {
     return data;
   }
 
+  async function encryptAlbumNamesForNewDevice(
+    sharedAlbums: { albumName: string; albumId: string }[],
+    publicKey: string,
+  ) {
+    const keyPair = await loadKeyPair();
+    if (!keyPair) {
+      console.error("Failed to load key pair");
+      return;
+    }
+    const newKeyPublicKey = await importRsaPublicKey(publicKey);
+    if (!newKeyPublicKey) {
+      console.error("Failed to import public key");
+      return;
+    }
+    const data = await Promise.all(
+      sharedAlbums.map(async (sharedAlbum) => {
+        const decryptedAlbumName = await decrypt(
+          keyPair.privateKey,
+          hexToArrayBuffer(sharedAlbum.albumName),
+        );
+        if (!decryptedAlbumName) {
+          throw new Error("Failed to decrypt albumName");
+        }
+        const encryptedAlbumNameForNewDevice = await encrypt(
+          newKeyPublicKey,
+          decryptedAlbumName,
+        );
+        if (!encryptedAlbumNameForNewDevice) {
+          throw new Error("Failed to encrypt key");
+        }
+        return {
+          albumName: encryptedAlbumNameForNewDevice,
+          albumId: sharedAlbum.albumId,
+        };
+      }),
+    );
+    return data;
+  }
+
   async function trustDevice(deviceId: string, publicKey: string) {
     try {
-      const keys = await encryptForNewDevice(devicesKeys.data ?? [], publicKey);
+      const keys = await encryptPictureKeysForNewDevice(devicesKeys.data ?? [], publicKey);
+      const albumsForDevice = await encryptAlbumNamesForNewDevice(sharedAlbums.data ?? [], publicKey);
+
       if (!keys) {
         console.error("Failed to encrypt keys");
         return;
       }
-      await trustMutation.mutate(
-        { deviceId, keys },
+      if (!albumsForDevice) {
+        console.error("Failed to encrypt album names");
+        return;
+      }
+      trustMutation.mutate(
+        { deviceId, keys, albumsForDevice },
         {
           onSuccess: () => {
             refetch();
