@@ -54,4 +54,22 @@ export const albumRouter = createTRPCRouter({
         });
       }
     }),
+
+  getAll: protectedProcedure
+    .use(rateLimitedMiddleware)
+    .query(async ({ ctx }) => {
+      logger.info(`Getting albums for deviceId ${ctx.session.user.id}`);
+      const sharedalbums = await ctx.db.sharedAlbum.findMany({
+        where: {
+          deviceId: ctx.session.user.id,
+        },
+        include: {
+          album: true
+        }
+      });
+      if (!sharedalbums) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      return sharedalbums;
+    }),
 });
