@@ -16,13 +16,13 @@ import {
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 
-interface Album {
+interface IAlbum {
   id: string;
   albumName: string;
 }
 
 export default function Dashboard() {
-  const [albums, setAlbums] = useState<Album[]>([]);
+  const [albums, setAlbums] = useState<IAlbum[]>([]);
   const [currentAlbum, setCurrentAlbum] = useState("gallerie");
   const files = api.picture.getAll.useQuery();
   const sharedAlbums = api.album.getAll.useQuery();
@@ -56,7 +56,7 @@ export default function Dashboard() {
   }
 
   async function decipherAlbums() {
-    const decryptedAlbums: Album[] = [];
+    const decryptedAlbums: IAlbum[] = [];
     for (const sharedAlbum of sharedAlbums.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
@@ -100,7 +100,7 @@ return (
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {albums.map((album) => (
-                <AlbumComponent
+                <Album
                   key={album.id}
                   setCurrentAlbum={() => {
                     setCurrentAlbum(album.id);
@@ -128,7 +128,7 @@ return (
             <SheetContent side="left" className="flex flex-col">
               <nav className="grid gap-2 text-lg font-medium">
                 {albums.map((album) => (
-                  <AlbumComponent
+                  <Album
                     key={album.id}
                     setCurrentAlbum={() => {
                       setCurrentAlbum(album.id);
@@ -174,7 +174,7 @@ interface AlbumProps {
   albumName: string;
 }
 
-function AlbumComponent({ setCurrentAlbum, albumName }: AlbumProps) {
+function Album({ setCurrentAlbum, albumName }: AlbumProps) {
   return (
     <div
       className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
