@@ -15,6 +15,8 @@ import {
   loadKeyPair,
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
+import { Card,CardContent,CardFooter } from "@/components/ui/card";
+import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
 
 interface IAlbum {
   id: string;
@@ -26,15 +28,17 @@ export default function Dashboard() {
   const [currentAlbum, setCurrentAlbum] = useState("gallerie");
   const files = api.picture.getAll.useQuery();
   const sharedAlbums = api.album.getAll.useQuery();
-  const [pictures_preview, setPictures] = useState<string[]>([]);
+  const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
+  const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
 
   async function decypherPictures() {
-    const preview_url: string[] = [];
+    const preview_url: {idPicture: string,idsAlbum:string[], url:string}[] = [];
     for (const picture of files.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
         return;
       }
+      console.log(`picture: ${picture.albums}`)
       const array_buff = hexToArrayBuffer(picture.file);
       const key_array_buff = hexToArrayBuffer(picture.key);
       const sym_key_string = await decrypt(keyPair.privateKey, key_array_buff);
@@ -50,7 +54,7 @@ export default function Dashboard() {
         return;
       }
       const url = URL.createObjectURL(new Blob([file]));
-      preview_url.push(url);
+      preview_url.push({idPicture : picture.id, idsAlbum: picture.albums, url: url});
     }
     setPictures(preview_url);
   }
@@ -75,6 +79,18 @@ export default function Dashboard() {
     setAlbums(decryptedAlbums)
   }
 
+  async function addPictureToAlbum(pictureId: string, albumId: string) {
+    try {
+      await addToAlbumMutation.mutateAsync({
+        pictureId,
+        albumId,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+
   useEffect(() => {
     decypherPictures();
     console.log(files.data);
@@ -84,7 +100,6 @@ export default function Dashboard() {
     decipherAlbums();
     console.log(`albums: ${sharedAlbums.data}`)
   }, [sharedAlbums.data]);
-
 return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -154,16 +169,34 @@ return (
             </div>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {pictures_preview.map((picture, index) => (
-            <img
-              key={index}
-              src={picture}
-              alt="Picture"
-              className="h-96 w-full rounded-lg object-cover"
-            />
-          ))}
-        </main>
+              <main className="flex flex-row gap-2">
+              {pictures_preview.map((picture, index) => (
+                <Card>
+                  <CardContent>
+                    <img
+                      key={index}
+                      src={picture.url}
+                      alt="Picture"
+                      className="h-96 w-full rounded-lg object-cover"
+                    />
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline">Add in album</Button>
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        {albums.map((album) => (
+                          !picture.idsAlbum.includes(album.id) && <Button onClick={() => addPictureToAlbum(picture.idPicture, album.id)}>{album.albumName}</Button>
+                        ))}
+                      </PopoverContent>
+                    </Popover>
+                    <Button>Share</Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </main>
+
       </div>
     </div>
   );

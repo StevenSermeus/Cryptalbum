@@ -82,7 +82,12 @@ export const pictureRouter = createTRPCRouter({
               },
             },
           },
-        },
+          albums: {
+            select: {
+              id: true,
+          },
+        }
+      },
       });
       const files = [];
       for (const picturedb of pictures_user) {
@@ -112,6 +117,7 @@ export const pictureRouter = createTRPCRouter({
           files.push({
             id: picturedb.id,
             key: picturedb.shareds[0]?.key as string,
+            albums: picturedb.albums.map((album: { id: string; }) => album.id),
             file: file_encrypted,
           });
         }
@@ -137,5 +143,37 @@ export const pictureRouter = createTRPCRouter({
         },
       });
       return sharedKeys;
+    }),
+   addPictureToAlbum: protectedProcedure
+    .input(
+      z.object({
+        pictureId: z.string(),
+        albumId: z.string(),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.db.picture.update({
+            where: {
+              id: input.pictureId,
+            },
+            data: {
+              albums: {
+                connect: {
+                  id: input.albumId,
+                },
+              },
+            },
+          });
+        } catch (e) {
+        logger.error(
+          `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add picture to album. Please try again.",
+        });
+      }
     }),
 });
