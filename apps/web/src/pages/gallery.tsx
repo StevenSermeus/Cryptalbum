@@ -8,6 +8,8 @@ import { UploadFileDialog } from "@/components/UploadFileDialog";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 import { hexToArrayBuffer } from "@/utils/file";
+import { ToastAction } from "@/components/ui/toast";
+
 import {
   decrypt,
   decryptFileSymmetrical,
@@ -16,6 +18,9 @@ import {
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 import { ShareAlbumButton } from "@/components/ShareAlbumButton";
+import { Card,CardContent,CardFooter } from "@/components/ui/card";
+import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
+import { toast } from "@/components/ui/use-toast";
 
 interface IAlbum {
   id: string;
@@ -24,13 +29,16 @@ interface IAlbum {
 
 export default function Dashboard() {
   const [albums, setAlbums] = useState<IAlbum[]>([]);
-  const [currentAlbum, setCurrentAlbum] = useState("gallerie");
+  const [currentAlbum, setCurrentAlbum] = useState("gallery");
+  const utils_trpc = api.useUtils();
   const files = api.picture.getAll.useQuery(currentAlbum);
+
   const sharedAlbums = api.album.getAll.useQuery();
-  const [pictures_preview, setPictures] = useState<string[]>([]);
+  const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
+  const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
 
   async function decypherPictures() {
-    const preview_url: string[] = [];
+    const pictures: {idPicture: string,idsAlbum:string[], url:string}[] = [];
     for (const picture of files.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
@@ -51,9 +59,9 @@ export default function Dashboard() {
         return;
       }
       const url = URL.createObjectURL(new Blob([file]));
-      preview_url.push(url);
+      pictures.push({idPicture : picture.id, idsAlbum: picture.albums, url: url});
     }
-    setPictures(preview_url);
+    setPictures(pictures);
   }
 
   async function decipherAlbums() {
@@ -76,9 +84,36 @@ export default function Dashboard() {
     setAlbums(decryptedAlbums);
   }
 
+  async function addPictureToAlbum(pictureId: string, albumId: string) {
+    try {
+      await addToAlbumMutation.mutateAsync({
+        pictureId,
+        albumId,
+      }, {
+        onSuccess: () => {
+          utils_trpc.invalidate(undefined, {
+            refetchType: "all",
+            queryKey: ["albums.getAll"],
+          });
+          toast({
+            title: "Picture added to album",
+            action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+          });
+        }
+      } );
+    } catch (error) {
+      toast({
+        title: "Failed to add photo into album",
+        description: "No key pair found",
+        variant: "destructive",
+        action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+      });
+    }
+  }
+
+
   useEffect(() => {
     decypherPictures();
-    console.log(files.data);
   }, [files.data]);
 
   useEffect(() => {
@@ -93,7 +128,7 @@ export default function Dashboard() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              <span className="" onClick={() => setCurrentAlbum("gallerie")}>
+              <span className="" onClick={() => setCurrentAlbum("gallery")}>
                 Pictures
               </span>
             </div>
@@ -152,24 +187,42 @@ export default function Dashboard() {
                 )
               }
               <span className="font-semibold">
-                {currentAlbum === "gallerie"
-                  ? "Gallerie"
+                {currentAlbum === "gallery"
+                  ? "Gallery"
                   : albums.find((val) => val.id === currentAlbum)?.albumName}
               </span>
               <Badge>Nb pictures</Badge>
             </div>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {pictures_preview.map((picture, index) => (
-            <img
-              key={index}
-              src={picture}
-              alt="Picture"
-              className="h-96 w-full rounded-lg object-cover"
-            />
-          ))}
-        </main>
+              <main className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {pictures_preview.map((picture, index) => (
+                <Card>
+                  <CardContent>
+                    <img
+                      key={index}
+                      src={picture.url}
+                      alt="Picture"
+                      className="h-96 w-full rounded-lg object-cover"
+                    />
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline">Add in album</Button>
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        {albums.map((album) => (
+                          !picture.idsAlbum.includes(album.id) && <Button onClick={() => addPictureToAlbum(picture.idPicture, album.id)}>{album.albumName}</Button>
+                        ))}
+                      </PopoverContent>
+                    </Popover>
+                    <Button>Share</Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </main>
+
       </div>
     </div>
   );

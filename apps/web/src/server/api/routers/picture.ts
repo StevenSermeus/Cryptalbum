@@ -71,21 +71,53 @@ export const pictureRouter = createTRPCRouter({
   getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
       // TODO: if input = gallery send all, else send the only pictures in album
-      console.log(`input: ${input}`)
-      const pictures_user = await ctx.db.picture.findMany({
-        where: {
-          userId: ctx.session.userId,
+      let pictures_user: ({ albums: { id: string; }[]; shareds: { id: string; userId: string; photoId: string; key: string; createdAt: Date; updatedAt: Date; }[]; } & { id: string; userId: string; createdAt: Date; updatedAt: Date; })[] = []; 
+      if (input === "gallery") {
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: ctx.session.userId,
+          },
+          include: {
+            shareds: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+            },
+          }
         },
-        include: {
-          shareds: {
-            where: {
-              user_device: {
-                id: ctx.session.user.id,
+        });
+      }else{
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: ctx.session.userId,
+            albums: {
+              some: {
+                id: input,
               },
             },
           },
+          include: {
+            shareds: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+            },
+          }
         },
-      });
+        });
+      }
       const files = [];
       for (const picturedb of pictures_user) {
         if (
@@ -114,6 +146,7 @@ export const pictureRouter = createTRPCRouter({
           files.push({
             id: picturedb.id,
             key: picturedb.shareds[0]?.key as string,
+            albums: picturedb.albums.map((album: { id: string; }) => album.id),
             file: file_encrypted,
           });
         }
@@ -139,5 +172,37 @@ export const pictureRouter = createTRPCRouter({
         },
       });
       return sharedKeys;
+    }),
+   addPictureToAlbum: protectedProcedure
+    .input(
+      z.object({
+        pictureId: z.string(),
+        albumId: z.string(),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.db.picture.update({
+            where: {
+              id: input.pictureId,
+            },
+            data: {
+              albums: {
+                connect: {
+                  id: input.albumId,
+                },
+              },
+            },
+          });
+        } catch (e) {
+        logger.error(
+          `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add picture to album. Please try again.",
+        });
+      }
     }),
 });
