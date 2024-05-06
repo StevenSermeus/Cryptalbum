@@ -71,26 +71,53 @@ export const pictureRouter = createTRPCRouter({
   getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
       // TODO: if input = gallery send all, else send the only pictures in album
-      console.log(`input: ${input}`)
-      const pictures_user = await ctx.db.picture.findMany({
-        where: {
-          userId: ctx.session.userId,
+      let pictures_user: ({ albums: { id: string; }[]; shareds: { id: string; userId: string; photoId: string; key: string; createdAt: Date; updatedAt: Date; }[]; } & { id: string; userId: string; createdAt: Date; updatedAt: Date; })[] = []; 
+      if (input === "gallery") {
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: ctx.session.userId,
+          },
+          include: {
+            shareds: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+            },
+          }
         },
-        include: {
-          shareds: {
-            where: {
-              user_device: {
-                id: ctx.session.user.id,
+        });
+      }else{
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: ctx.session.userId,
+            albums: {
+              some: {
+                id: input,
               },
             },
           },
-          albums: {
-            select: {
-              id: true,
-          },
-        }
-      },
-      });
+          include: {
+            shareds: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+            },
+          }
+        },
+        });
+      }
       const files = [];
       for (const picturedb of pictures_user) {
         if (

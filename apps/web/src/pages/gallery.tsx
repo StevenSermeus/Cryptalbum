@@ -8,6 +8,8 @@ import { UploadFileDialog } from "@/components/UploadFileDialog";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 import { hexToArrayBuffer } from "@/utils/file";
+import { ToastAction } from "@/components/ui/toast";
+
 import {
   decrypt,
   decryptFileSymmetrical,
@@ -17,6 +19,7 @@ import {
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 import { Card,CardContent,CardFooter } from "@/components/ui/card";
 import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
+import { toast } from "@/components/ui/use-toast";
 
 interface IAlbum {
   id: string;
@@ -25,20 +28,21 @@ interface IAlbum {
 
 export default function Dashboard() {
   const [albums, setAlbums] = useState<IAlbum[]>([]);
-  const [currentAlbum, setCurrentAlbum] = useState("gallerie");
+  const [currentAlbum, setCurrentAlbum] = useState("gallery");
+  const utils_trpc = api.useUtils();
   const files = api.picture.getAll.useQuery(currentAlbum);
+
   const sharedAlbums = api.album.getAll.useQuery();
   const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
   const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
 
   async function decypherPictures() {
-    const preview_url: {idPicture: string,idsAlbum:string[], url:string}[] = [];
+    const pictures: {idPicture: string,idsAlbum:string[], url:string}[] = [];
     for (const picture of files.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
         return;
       }
-      console.log(`picture: ${picture.albums}`)
       const array_buff = hexToArrayBuffer(picture.file);
       const key_array_buff = hexToArrayBuffer(picture.key);
       const sym_key_string = await decrypt(keyPair.privateKey, key_array_buff);
@@ -54,9 +58,9 @@ export default function Dashboard() {
         return;
       }
       const url = URL.createObjectURL(new Blob([file]));
-      preview_url.push({idPicture : picture.id, idsAlbum: picture.albums, url: url});
+      pictures.push({idPicture : picture.id, idsAlbum: picture.albums, url: url});
     }
-    setPictures(preview_url);
+    setPictures(pictures);
   }
 
   async function decipherAlbums() {
@@ -84,21 +88,35 @@ export default function Dashboard() {
       await addToAlbumMutation.mutateAsync({
         pictureId,
         albumId,
-      });
+      }, {
+        onSuccess: () => {
+          utils_trpc.invalidate(undefined, {
+            refetchType: "all",
+            queryKey: ["albums.getAll"],
+          });
+          toast({
+            title: "Picture added to album",
+            action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+          });
+        }
+      } );
     } catch (error) {
-      console.error(error);
+      toast({
+        title: "Failed to add photo into album",
+        description: "No key pair found",
+        variant: "destructive",
+        action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+      });
     }
   }
 
 
   useEffect(() => {
     decypherPictures();
-    console.log(files.data);
   }, [files.data]);
 
   useEffect(() => {
     decipherAlbums();
-    console.log(`albums: ${sharedAlbums.data}`)
   }, [sharedAlbums.data]);
 return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
@@ -107,7 +125,7 @@ return (
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              <span className="" onClick={() => setCurrentAlbum("gallerie")}>
+              <span className="" onClick={() => setCurrentAlbum("gallery")}>
                 Pictures
               </span>
             </div>
@@ -161,15 +179,15 @@ return (
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold">
-                {currentAlbum === "gallerie"
-                  ? "Gallerie"
+                {currentAlbum === "gallery"
+                  ? "Gallery"
                   : albums.find((val) => val.id === currentAlbum)?.albumName}
               </span>
               <Badge>Nb pictures</Badge>
             </div>
           </div>
         </header>
-              <main className="flex flex-row gap-2">
+              <main className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {pictures_preview.map((picture, index) => (
                 <Card>
                   <CardContent>
