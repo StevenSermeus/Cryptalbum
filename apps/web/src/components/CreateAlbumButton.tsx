@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import FileUploadForm from "./CreateAlbumDialog";
+import CreateAlbumDialog from "./CreateAlbumDialog";
 
 export function CreateAlbumButton() {
   return (
@@ -18,7 +18,7 @@ export function CreateAlbumButton() {
         <DialogHeader>
           <DialogTitle>Create a New Album</DialogTitle>
         </DialogHeader>
-        <FileUploadForm />
+        <CreateAlbumDialog />
       </DialogContent>
     </Dialog>
   );

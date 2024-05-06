@@ -72,7 +72,7 @@ export default function Dashboard() {
         decryptedAlbums.push({ id: sharedAlbum.albumId, albumName: albumName });
       }
     }
-    setAlbums(decryptedAlbums)
+    setAlbums(decryptedAlbums);
   }
 
   useEffect(() => {
@@ -82,10 +82,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     decipherAlbums();
-    console.log(`albums: ${sharedAlbums.data}`)
+    console.log(`albums: ${sharedAlbums.data}`);
   }, [sharedAlbums.data]);
 
-return (
+  return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
@@ -140,7 +140,7 @@ return (
             </SheetContent>
           </Sheet>
           <div className="flex w-full flex-1 items-center justify-between">
-            <div className="flex gap-2 justify-between">
+            <div className="flex justify-between gap-2">
               <CreateAlbumButton />
               <UploadFileDialog />
             </div>

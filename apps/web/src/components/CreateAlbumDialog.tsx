@@ -22,7 +22,7 @@ const formSchema = z.object({
   albumName: z.string().min(3, "Album name is too short"),
 });
 
-export default function FileUploadForm() {
+export default function CreateAlbumDialog() {
   const { toast } = useToast();
   const { data } = useSession();
 
@@ -44,7 +44,7 @@ export default function FileUploadForm() {
     try {
       if (!userDevicesQuery.data) {
         toast({
-          title: "Failed to upload file",
+          title: "Failed to create album",
           description: "No devices found",
           variant: "destructive",
           action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
@@ -54,7 +54,7 @@ export default function FileUploadForm() {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
         toast({
-          title: "Failed to upload file",
+          title: "Failed to create album",
           description: "No key pair found",
           variant: "destructive",
           action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
