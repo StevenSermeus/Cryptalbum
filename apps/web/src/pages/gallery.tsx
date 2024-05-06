@@ -1,4 +1,4 @@
-import { Menu, Package2 } from "lucide-react";
+import { Images, Menu, Package2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,17 @@ import {
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 
+interface Album {
+  id: string;
+  albumName: string;
+}
+
 export default function Dashboard() {
-  // const [currentAlbum, setCurrentAlbum] = useState("gallerie");
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [currentAlbum, setCurrentAlbum] = useState("gallerie");
   const files = api.picture.getAll.useQuery();
   const sharedAlbums = api.album.getAll.useQuery();
   const [pictures_preview, setPictures] = useState<string[]>([]);
-  // const [albums, setAlbums] = useState();
 
   async function decypherPictures() {
     const preview_url: string[] = [];
@@ -51,6 +56,7 @@ export default function Dashboard() {
   }
 
   async function decipherAlbums() {
+    const decryptedAlbums: Album[] = [];
     for (const sharedAlbum of sharedAlbums.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
@@ -62,9 +68,11 @@ export default function Dashboard() {
         keyPair.privateKey,
         hexToArrayBuffer(encryptedAlbumName),
       );
-      console.log(`album name: ${albumName}`)
-      // console.log(`album createdAt: ${sharedAlbum.album.createdAt}`)
+      if (albumName) {
+        decryptedAlbums.push({ id: sharedAlbum.albumId, albumName: albumName });
+      }
     }
+    setAlbums(decryptedAlbums)
   }
 
   useEffect(() => {
@@ -77,22 +85,29 @@ export default function Dashboard() {
     console.log(`albums: ${sharedAlbums.data}`)
   }, [sharedAlbums.data]);
 
-  return (
+return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              {/*
               <span className="" onClick={() => setCurrentAlbum("gallerie")}>
                 Pictures
               </span>
-              */}
             </div>
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              {albums.map((album) => (
+                <AlbumComponent
+                  key={album.id}
+                  setCurrentAlbum={() => {
+                    setCurrentAlbum(album.id);
+                  }}
+                  albumName={album.albumName}
+                />
+              ))}
             </nav>
           </div>
         </div>
@@ -112,6 +127,15 @@ export default function Dashboard() {
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
               <nav className="grid gap-2 text-lg font-medium">
+                {albums.map((album) => (
+                  <AlbumComponent
+                    key={album.id}
+                    setCurrentAlbum={() => {
+                      setCurrentAlbum(album.id);
+                    }}
+                    albumName={album.albumName}
+                  />
+                ))}
               </nav>
             </SheetContent>
           </Sheet>
@@ -121,6 +145,11 @@ export default function Dashboard() {
               <UploadFileDialog />
             </div>
             <div className="flex items-center gap-2">
+              <span className="font-semibold">
+                {currentAlbum === "gallerie"
+                  ? "Gallerie"
+                  : albums.find((val) => val.id === currentAlbum)?.albumName}
+              </span>
               <Badge>Nb pictures</Badge>
             </div>
           </div>
@@ -140,19 +169,19 @@ export default function Dashboard() {
   );
 }
 
-// interface AlbumProps {
-//   setCurrentAlbum: () => void;
-//   albumName: string;
-// }
-//
-// function Album({ setCurrentAlbum, albumName }: AlbumProps) {
-//   return (
-//     <div
-//       className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-//       onClick={() => setCurrentAlbum()}
-//     >
-//       <Images className="h-5 w-5" />
-//       <span>{albumName}</span>
-//     </div>
-//   );
-// }
+interface AlbumProps {
+  setCurrentAlbum: () => void;
+  albumName: string;
+}
+
+function AlbumComponent({ setCurrentAlbum, albumName }: AlbumProps) {
+  return (
+    <div
+      className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+      onClick={() => setCurrentAlbum()}
+    >
+      <Images className="h-5 w-5" />
+      <span>{albumName}</span>
+    </div>
+  );
+}
