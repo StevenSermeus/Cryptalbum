@@ -73,7 +73,8 @@ model UserDevice {
   updatedAt    DateTime              @updatedAt
   user         User                  @relation(fields: [userId], references: [id])
   challenges   UserDeviceChallenge[]
-  shareds Shared[]
+  shareds      Shared[]
+  sharedAlbums SharedAlbum[]
 }
 
 model UserDeviceChallenge {
@@ -109,12 +110,20 @@ model Shared {
 }
 
 model Album {
-  id        String    @id @default(cuid())
-  userId    String
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  owner     User      @relation(fields: [userId], references: [id])
-  pictures  Picture[]
+  id           String        @id @default(cuid())
+  userId       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  owner        User          @relation(fields: [userId], references: [id])
+  sharedAlbums SharedAlbum[]
+  pictures     Picture[]
 }
 
+model SharedAlbum {
+  id           String     @id @default(cuid())
+  deviceId     String
+  albumId      String
+  albumName    String
+  user_device  UserDevice @relation(fields: [deviceId], references: [id])
+  album        Album      @relation(fields: [albumId], references: [id])
+}

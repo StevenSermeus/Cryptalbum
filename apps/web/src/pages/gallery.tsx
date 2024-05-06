@@ -14,6 +14,7 @@ import {
   importSymmetricalKey,
   loadKeyPair,
 } from "@/utils/crypto";
+import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 
 export default function Dashboard() {
   const [albums] = useState([
@@ -112,7 +113,10 @@ export default function Dashboard() {
             </SheetContent>
           </Sheet>
           <div className="flex w-full flex-1 items-center justify-between">
-            <UploadFileDialog />
+            <div className="flex gap-2 justify-between">
+              <CreateAlbumButton />
+              <UploadFileDialog />
+            </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold">
                 {currentAlbum === "gallerie"
