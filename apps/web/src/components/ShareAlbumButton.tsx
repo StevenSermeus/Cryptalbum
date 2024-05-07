@@ -11,9 +11,10 @@ import { IAlbum } from "@/pages/gallery";
 
 interface AlbumProps {
   album: IAlbum;
+  pictures: { idPicture: string; symKey: string; }[];
 }
 
-export function ShareAlbumButton({ album }: AlbumProps) {
+export function ShareAlbumButton({ album, pictures }: AlbumProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -23,7 +24,7 @@ export function ShareAlbumButton({ album }: AlbumProps) {
         <DialogHeader>
           <DialogTitle>Share Album With Someone</DialogTitle>
         </DialogHeader>
-        <ShareAlbumDialog albumId={album.id} albumName={album.albumName} />
+        <ShareAlbumDialog albumId={album.sharedAlbumId} albumName={album.albumName} pictures={pictures} />
       </DialogContent>
     </Dialog>
   );

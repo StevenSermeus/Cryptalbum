@@ -54,6 +54,100 @@ export const albumRouter = createTRPCRouter({
       }
     }),
 
+  share: protectedProcedure
+    .input(
+      z.object({
+        albumId: z.string(),
+        sharedAlbumWithDevice: z.array(
+          z.object({
+            deviceId: z.string(),
+            encryptedAlbumName: z.string(),
+          }),
+        ),
+        sharedPictures: z.array(
+          z.array(
+            z.object({
+              deviceId: z.string(),
+              pictureId: z.string(),
+              key: z.string(),
+            }),
+          ),
+        ),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        logger.info(
+          `Starting the album share process by ${ctx.session.userId} for album ${input.albumId}`,
+        );
+        const album = await ctx.db.album.findUnique({
+          where: { id: input.albumId },
+          select: { userId: true },
+        });
+
+        if (!album || album.userId !== ctx.session.userId) {
+          !album
+            ? logger.warn(`Album ${input.albumId} not found to share`)
+            : logger.warn(
+              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+            );
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You are not the owner of this album or the album does not exist.",
+          });
+        }
+        const deviceIds = input.sharedAlbumWithDevice.map((s) => s.deviceId);
+        const devices = await ctx.db.userDevice.findMany({
+          where: {
+            id: {
+              in: deviceIds,
+            },
+          },
+        });
+        if (devices.length !== deviceIds.length) {
+          const foundIds = new Set(devices.map((d) => d.id));
+          const missingIds = deviceIds.filter((id) => !foundIds.has(id));
+          logger.warn(`Some devices were not found: ${missingIds}`);
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Devices with IDs ${missingIds.join(", ")} do not exist.`,
+          });
+        }
+        await ctx.db.$transaction(async (t) => {
+          for (const sharedAlbum of input.sharedAlbumWithDevice) {
+            await t.sharedAlbum.create({
+              data: {
+                deviceId: sharedAlbum.deviceId,
+                albumId: input.albumId,
+                albumName: sharedAlbum.encryptedAlbumName,
+              },
+            });
+          }
+          for (const sharedPicturesPerDevice of input.sharedPictures) {
+            for (const picture of sharedPicturesPerDevice) {
+              await t.sharedPicture.create({
+                data: {
+                  deviceId: picture.deviceId,
+                  pictureId: picture.pictureId,
+                  key: picture.key,
+                },
+              });
+            }
+          }
+        });
+      } catch (e) {
+        logger.error(
+          `Failed to create album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create album. Please try again.",
+        });
+      }
+    }),
+
   getAll: protectedProcedure
     .use(rateLimitedMiddleware)
     .query(async ({ ctx }) => {
@@ -63,8 +157,8 @@ export const albumRouter = createTRPCRouter({
           deviceId: ctx.session.user.id,
         },
         include: {
-          album: true
-        }
+          album: true,
+        },
       });
       if (!sharedAlbums) {
         throw new TRPCError({ code: "NOT_FOUND" });
@@ -82,8 +176,8 @@ export const albumRouter = createTRPCRouter({
         },
         select: {
           albumName: true,
-          albumId: true
-        }
+          albumId: true,
+        },
       });
       if (!sharedAlbums) {
         throw new TRPCError({ code: "NOT_FOUND" });

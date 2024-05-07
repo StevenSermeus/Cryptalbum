@@ -70,8 +70,18 @@ export const pictureRouter = createTRPCRouter({
   }),
   getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
-      // TODO: if input = gallery send all, else send the only pictures in album
-      let pictures_user: ({ albums: { id: string; }[]; sharedPictures: { id: string; deviceId: string; pictureId: string; key: string; createdAt: Date; updatedAt: Date; }[]; } & { id: string; userId: string; createdAt: Date; updatedAt: Date; })[] = []; 
+      let pictures_user: ({
+        albums: { id: string }[];
+        sharedPictures: {
+          id: string;
+          deviceId: string;
+          pictureId: string;
+          key: string;
+          createdAt: Date;
+          updatedAt: Date;
+        }[];
+      } & { id: string; userId: string; createdAt: Date; updatedAt: Date })[] =
+        [];
       if (input === "gallery") {
         pictures_user = await ctx.db.picture.findMany({
           where: {
@@ -88,14 +98,13 @@ export const pictureRouter = createTRPCRouter({
             albums: {
               select: {
                 id: true,
+              },
             },
-          }
-        },
+          },
         });
-      }else{
+      } else {
         pictures_user = await ctx.db.picture.findMany({
           where: {
-            userId: ctx.session.userId,
             albums: {
               some: {
                 id: input,
@@ -113,9 +122,9 @@ export const pictureRouter = createTRPCRouter({
             albums: {
               select: {
                 id: true,
+              },
             },
-          }
-        },
+          },
         });
       }
       const files = [];
@@ -124,7 +133,8 @@ export const pictureRouter = createTRPCRouter({
           picturedb.sharedPictures.length !== 1 &&
           picturedb.sharedPictures[0]?.key === undefined
         ) {
-          return [];
+          // TODO: TEMPORARY FIX find a better way to do it
+          continue;
         } else {
           const minio_file = await ctx.minio.getObject(
             "pictures",
@@ -146,7 +156,7 @@ export const pictureRouter = createTRPCRouter({
           files.push({
             id: picturedb.id,
             key: picturedb.sharedPictures[0]?.key as string,
-            albums: picturedb.albums.map((album: { id: string; }) => album.id),
+            albums: picturedb.albums.map((album: { id: string }) => album.id),
             file: file_encrypted,
           });
         }
@@ -173,7 +183,7 @@ export const pictureRouter = createTRPCRouter({
       });
       return sharedKeys;
     }),
-   addPictureToAlbum: protectedProcedure
+  addPictureToAlbum: protectedProcedure
     .input(
       z.object({
         pictureId: z.string(),
@@ -184,18 +194,18 @@ export const pictureRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         await ctx.db.picture.update({
-            where: {
-              id: input.pictureId,
-            },
-            data: {
-              albums: {
-                connect: {
-                  id: input.albumId,
-                },
+          where: {
+            id: input.pictureId,
+          },
+          data: {
+            albums: {
+              connect: {
+                id: input.albumId,
               },
             },
-          });
-        } catch (e) {
+          },
+        });
+      } catch (e) {
         logger.error(
           `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
         );

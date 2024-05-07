@@ -41,10 +41,17 @@ export default function Dashboard() {
   const files = api.picture.getAll.useQuery(currentAlbum);
   const sharedAlbums = api.album.getAll.useQuery();
   const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
-  const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
+  const [pictures_preview, setPictures] = useState<
+    { idPicture: string; symKey: string; idsAlbum: string[]; url: string }[]
+  >([]);
 
   async function decypherPictures() {
-    const pictures: {idPicture: string,idsAlbum:string[], url:string}[] = [];
+    const pictures: {
+      idPicture: string;
+      symKey: string;
+      idsAlbum: string[];
+      url: string;
+    }[] = [];
     for (const picture of files.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
@@ -67,6 +74,7 @@ export default function Dashboard() {
       const url = URL.createObjectURL(new Blob([file]));
       pictures.push({
         idPicture: picture.id,
+        symKey: sym_key_string,
         idsAlbum: picture.albums,
         url: url,
       });
@@ -197,6 +205,7 @@ export default function Dashboard() {
                 albums.some((val) => val.sharedAlbumId === currentAlbum && session.data?.user.userId === val.userId) && (
                   <ShareAlbumButton
                     album={albums.find((val) => val.sharedAlbumId === currentAlbum)!}
+                    pictures={pictures_preview}
                   />
                 )}
               <span className="font-semibold">
