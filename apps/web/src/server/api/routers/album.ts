@@ -125,6 +125,7 @@ export const albumRouter = createTRPCRouter({
               },
             });
           }
+          // TODO: ONLY ADD PICTURES IF THEY ARE NOT IN SHAREDPICTURE TABLE ALREADY
           for (const sharedPicturesPerDevice of input.sharedPictures) {
             for (const picture of sharedPicturesPerDevice) {
               await t.sharedPicture.create({
