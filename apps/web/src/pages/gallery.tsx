@@ -42,11 +42,12 @@ export default function Dashboard() {
   const sharedAlbums = api.album.getAll.useQuery();
   const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
   const [pictures_preview, setPictures] = useState<
-    { idPicture: string; symKey: string; idsAlbum: string[]; url: string }[]
+    { userId: string; idPicture: string; symKey: string; idsAlbum: string[]; url: string }[]
   >([]);
 
   async function decypherPictures() {
     const pictures: {
+      userId: string;
       idPicture: string;
       symKey: string;
       idsAlbum: string[];
@@ -73,6 +74,7 @@ export default function Dashboard() {
       }
       const url = URL.createObjectURL(new Blob([file]));
       pictures.push({
+        userId: picture.userId,
         idPicture: picture.id,
         symKey: sym_key_string,
         idsAlbum: picture.albums,
@@ -138,9 +140,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     decipherAlbums();
-    console.log(`albums: ${sharedAlbums.data}`);
   }, [sharedAlbums.data]);
-
+  
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -155,15 +156,37 @@ export default function Dashboard() {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {albums.map((album) => (
-                <Album
-                  key={album.sharedAlbumId}
-                  setCurrentAlbum={() => {
-                    setCurrentAlbum(album.sharedAlbumId);
-                  }}
-                  albumName={album.albumName}
-                />
-              ))}
+              {albums.some(album => album.userId === session.data?.user.userId) && (
+                <>
+                  Your albums
+                  {albums.map((album) => (
+                    album.userId === session.data?.user.userId &&
+                    <Album
+                      key={album.sharedAlbumId}
+                      setCurrentAlbum={() => {
+                        setCurrentAlbum(album.sharedAlbumId);
+                      }}
+                      albumName={album.albumName}
+                    />
+                  ))}
+                  <hr/>
+                </>
+              )}
+              {albums.some(album => album.userId !== session.data?.user.userId) && (
+                <>
+                  Shared albums
+                  {albums.map((album) => (
+                    album.userId !== session.data?.user.userId &&
+                    <Album
+                      key={album.sharedAlbumId}
+                      setCurrentAlbum={() => {
+                        setCurrentAlbum(album.sharedAlbumId);
+                      }}
+                      albumName={album.albumName}
+                    />
+                  ))}
+                </>
+              )}
             </nav>
           </div>
         </div>
@@ -198,7 +221,10 @@ export default function Dashboard() {
           <div className="flex w-full flex-1 items-center justify-between">
             <div className="flex justify-between gap-2">
               <CreateAlbumButton />
-              <UploadFileDialog />
+              {currentAlbum === "gallery" && 
+                <UploadFileDialog />
+              }
+         
             </div>
             <div className="flex items-center gap-2">
               {currentAlbum !== "gallerie" &&
@@ -217,41 +243,43 @@ export default function Dashboard() {
             </div>
           </div>
         </header>
-        <main className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <main className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
           {pictures_preview.map((picture) => (
             <Card key={picture.idPicture}>
               <CardContent>
                 <img
                   src={picture.url}
                   alt="Picture"
-                  className="h-96 w-full rounded-lg object-cover"
+                  className="h-96 max-w-full  rounded-lg object-cover"
                 />
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline">Add in album</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="flex flex-col gap-2">
-                    {albums.map((album) => {
-                      if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
-                        return (
-                          <Button
-                            key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
-                            onClick={() =>
-                              addPictureToAlbum(picture.idPicture, album.sharedAlbumId)
+              {currentAlbum === "gallery" && picture.userId === session.data?.user.userId && (
+                <CardFooter className="flex justify-between">
+                 <Popover>
+                   <PopoverTrigger asChild>
+                     <Button variant="outline">Add in album</Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="flex flex-col gap-1">
+                          {albums.map((album) => {
+                            if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
+                              return (
+                                <Button
+                                  key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
+                                  onClick={() =>
+                                    addPictureToAlbum(picture.idPicture, album.sharedAlbumId)
+                                  }>
+                                  {album.albumName}
+                                </Button>
+                              );
                             }
-                          >
-                            {album.albumName}
-                          </Button>
-                        );
-                      }
-                      return null; // Ensure that nothing is rendered if condition fails
-                    })}
-                  </PopoverContent>
-                </Popover>
-                <Button>Share</Button>
-              </CardFooter>
+                            return null; // Ensure that nothing is rendered if condition fails
+                          })}
+                   </PopoverContent>
+                 </Popover>
+                 <Button>Share</Button>
+               </CardFooter>
+               )
+              }
             </Card>
           ))}
         </main>

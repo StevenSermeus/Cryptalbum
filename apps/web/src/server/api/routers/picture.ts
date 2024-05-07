@@ -154,6 +154,7 @@ export const pictureRouter = createTRPCRouter({
           });
           const file_encrypted = await promise;
           files.push({
+            userId : picturedb.userId,
             id: picturedb.id,
             key: picturedb.sharedPictures[0]?.key as string,
             albums: picturedb.albums.map((album: { id: string }) => album.id),
