@@ -65,9 +65,63 @@ export const pictureRouter = createTRPCRouter({
         });
       }
     }),
-  share: protectedProcedure.mutation(async () => {
-    return "Salut";
-  }),
+
+  shareWithDevices: protectedProcedure
+    .input(
+      z.object({
+        pictureId: z.string(),
+        sharedPictures: z.array(
+          z.object({
+            deviceId: z.string(),
+            key: z.string(),
+          }),
+        ),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        logger.info(
+          `Starting the pictures share process by ${ctx.session.userId} for a list of devices`,
+        );
+        const picture = await ctx.db.picture.findUnique({
+          where: { id: input.pictureId },
+          select: { userId: true },
+        });
+
+        if (!picture || picture.userId !== ctx.session.userId) {
+          !picture
+            ? logger.warn(`Picture ${input.pictureId} not found to share`)
+            : logger.warn(
+              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+            );
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You are not the owner of this album or the album does not exist.",
+          });
+        }
+        await ctx.db.$transaction(async (t) => {
+          for (const sharedPicture of input.sharedPictures) {
+            await t.sharedPicture.create({
+              data: {
+                deviceId: sharedPicture.deviceId,
+                pictureId: input.pictureId,
+                key: sharedPicture.key,
+              },
+            });
+          }
+        });
+      } catch (e) {
+        logger.error(
+          `Failed to create album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create album. Please try again.",
+        });
+      }
+    }),
   getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
       let pictures_user: ({

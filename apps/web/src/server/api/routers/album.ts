@@ -184,4 +184,59 @@ export const albumRouter = createTRPCRouter({
       }
       return sharedAlbums;
     }),
+
+  userDevicesOfAlbumWithoutAccessToPicture: protectedProcedure
+    .input(
+      z.object({
+        albumId: z.string(),
+        pictureId: z.string(),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      logger.info(
+        `Getting user devices associated with album ${input.albumId} who don't have access to picture ${input.pictureId} for user ${ctx.session.userId}`,
+      );
+      const album = await ctx.db.album.findUnique({
+        where: { id: input.albumId },
+        select: { userId: true },
+      });
+
+      if (!album || album.userId !== ctx.session.userId) {
+        !album
+          ? logger.warn(`Album ${input.albumId} not found`)
+          : logger.warn(
+            `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+          );
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You are not the owner of this album or the album does not exist.",
+        });
+      }
+      const devicesOfAlbumWithoutSharedPicture =
+        await ctx.db.userDevice.findMany({
+          where: {
+            sharedAlbums: {
+              some: {
+                albumId: input.albumId,
+              },
+            },
+            sharedPictures: {
+              none: {
+                pictureId: input.pictureId,
+              },
+            },
+          },
+          select: {
+            id: true,
+            publicKey: true,
+          },
+        });
+      const devices = devicesOfAlbumWithoutSharedPicture.map((sa) => ({
+        deviceId: sa.id,
+        publicKey: sa.publicKey,
+      }));
+      return devices;
+    }),
 });
