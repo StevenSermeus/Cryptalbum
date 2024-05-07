@@ -18,8 +18,12 @@ import {
 } from "@/utils/crypto";
 import { CreateAlbumButton } from "@/components/CreateAlbumButton";
 import { ShareAlbumButton } from "@/components/ShareAlbumButton";
-import { Card,CardContent,CardFooter } from "@/components/ui/card";
-import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@radix-ui/react-popover";
 import { toast } from "@/components/ui/use-toast";
 
 interface IAlbum {
@@ -59,7 +63,11 @@ export default function Dashboard() {
         return;
       }
       const url = URL.createObjectURL(new Blob([file]));
-      pictures.push({idPicture : picture.id, idsAlbum: picture.albums, url: url});
+      pictures.push({
+        idPicture: picture.id,
+        idsAlbum: picture.albums,
+        url: url,
+      });
     }
     setPictures(pictures);
   }
@@ -86,21 +94,24 @@ export default function Dashboard() {
 
   async function addPictureToAlbum(pictureId: string, albumId: string) {
     try {
-      await addToAlbumMutation.mutateAsync({
-        pictureId,
-        albumId,
-      }, {
-        onSuccess: () => {
-          utils_trpc.invalidate(undefined, {
-            refetchType: "all",
-            queryKey: ["albums.getAll"],
-          });
-          toast({
-            title: "Picture added to album",
-            action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
-          });
-        }
-      } );
+      await addToAlbumMutation.mutateAsync(
+        {
+          pictureId,
+          albumId,
+        },
+        {
+          onSuccess: () => {
+            utils_trpc.invalidate(undefined, {
+              refetchType: "all",
+              queryKey: ["albums.getAll"],
+            });
+            toast({
+              title: "Picture added to album",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+        },
+      );
     } catch (error) {
       toast({
         title: "Failed to add photo into album",
@@ -183,9 +194,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               {currentAlbum !== "gallerie" &&
                 albums.some((val) => val.id === currentAlbum) && (
-                  <ShareAlbumButton />
-                )
-              }
+                  <ShareAlbumButton
+                    album={albums.find((val) => val.id === currentAlbum)!}
+                  />
+                )}
               <span className="font-semibold">
                 {currentAlbum === "gallery"
                   ? "Gallery"
@@ -195,34 +207,44 @@ export default function Dashboard() {
             </div>
           </div>
         </header>
-              <main className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {pictures_preview.map((picture, index) => (
-                <Card>
-                  <CardContent>
-                    <img
-                      key={index}
-                      src={picture.url}
-                      alt="Picture"
-                      className="h-96 w-full rounded-lg object-cover"
-                    />
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline">Add in album</Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        {albums.map((album) => (
-                          !picture.idsAlbum.includes(album.id) && <Button onClick={() => addPictureToAlbum(picture.idPicture, album.id)}>{album.albumName}</Button>
-                        ))}
-                      </PopoverContent>
-                    </Popover>
-                    <Button>Share</Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </main>
-
+        <main className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {pictures_preview.map((picture) => (
+            <Card key={picture.idPicture}>
+              <CardContent>
+                <img
+                  src={picture.url}
+                  alt="Picture"
+                  className="h-96 w-full rounded-lg object-cover"
+                />
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline">Add in album</Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    {albums.map((album) => {
+                      if (!picture.idsAlbum.includes(album.id)) {
+                        return (
+                          <Button
+                            key={`${picture.idPicture}-${album.id}`} // Unique key for each button
+                            onClick={() =>
+                              addPictureToAlbum(picture.idPicture, album.id)
+                            }
+                          >
+                            {album.albumName}
+                          </Button>
+                        );
+                      }
+                      return null; // Ensure that nothing is rendered if condition fails
+                    })}
+                  </PopoverContent>
+                </Popover>
+                <Button>Share</Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </main>
       </div>
     </div>
   );

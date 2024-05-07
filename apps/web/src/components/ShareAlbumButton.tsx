@@ -7,8 +7,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ShareAlbumDialog from "./ShareAlbumDialog";
+import { IAlbum } from "@/pages/gallery";
 
-export function ShareAlbumButton() {
+interface AlbumProps {
+  album: IAlbum;
+}
+
+export function ShareAlbumButton({ album }: AlbumProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -18,7 +23,7 @@ export function ShareAlbumButton() {
         <DialogHeader>
           <DialogTitle>Share Album With Someone</DialogTitle>
         </DialogHeader>
-        <ShareAlbumDialog />
+        <ShareAlbumDialog albumId={album.id} albumName={album.albumName} />
       </DialogContent>
     </Dialog>
   );
