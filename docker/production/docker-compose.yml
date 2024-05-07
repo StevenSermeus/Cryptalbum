@@ -78,6 +78,7 @@ services:
     #   - "6379:6379"
     volumes:
       - ./valkey_data:/data
+      - ./valkey.conf:/etc/valkey/valkey.conf
     depends_on:
       seqgelf:
         condition: service_started

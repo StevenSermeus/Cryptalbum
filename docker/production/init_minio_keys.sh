@@ -35,5 +35,5 @@ mc admin user add minio_dev $MINIO_USER $MINIO_PASSWORD
 mc admin policy attach $MINIO_ALIAS readwrite --user $MINIO_USER
 # create a new key pair for the new user
 echo "Creating a new key pair for production user"
-mc admin user svcacct add --access-key $MINIO_ACCESS_KEY --secret-key $MINIO_SECRET_KEY --name $MINIO_NAME $MINIO_ALIAS $MINIO_USER
+mc admin user svcacct add --access-key $MINIO_ACCESS_KEY --secret-key $MINIO_SECRET_KEY --expiry 2025-06-24 --name $MINIO_NAME $MINIO_ALIAS $MINIO_USER
 

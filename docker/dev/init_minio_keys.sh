@@ -78,5 +78,5 @@ echo "Creating a new key pair for root user"
 if mc admin user svcacct info $MINIO_ALIAS $MINIO_ROOT_ACCESS_KEY | grep -q "AccessKey"; then
     echo "Key pair for root user is already created"
 else
-    mc admin user svcacct add --access-key $MINIO_ROOT_ACCESS_KEY --secret-key $MINIO_ROOT_SECRET_KEY --name $MINIO_NAME $MINIO_ALIAS $MINIO_ROOT_USER
+    mc admin user svcacct add --access-key $MINIO_ROOT_ACCESS_KEY --secret-key $MINIO_ROOT_SECRET_KEY --expiry 2025-06-24 --name $MINIO_NAME $MINIO_ALIAS $MINIO_ROOT_USER
 fi
