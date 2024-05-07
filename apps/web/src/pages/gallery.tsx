@@ -25,18 +25,20 @@ import {
   PopoverContent,
 } from "@radix-ui/react-popover";
 import { toast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
 
 export interface IAlbum {
-  id: string;
+  sharedAlbumId: string;
   albumName: string;
+  userId: string;
 }
 
 export default function Dashboard() {
   const [albums, setAlbums] = useState<IAlbum[]>([]);
   const [currentAlbum, setCurrentAlbum] = useState("gallery");
   const utils_trpc = api.useUtils();
+  const session = useSession();
   const files = api.picture.getAll.useQuery(currentAlbum);
-
   const sharedAlbums = api.album.getAll.useQuery();
   const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
   const [pictures_preview, setPictures] = useState<{idPicture: string,idsAlbum: string[], url:string}[]>([]);
@@ -86,7 +88,7 @@ export default function Dashboard() {
         hexToArrayBuffer(encryptedAlbumName),
       );
       if (albumName) {
-        decryptedAlbums.push({ id: sharedAlbum.albumId, albumName: albumName });
+        decryptedAlbums.push({ userId: sharedAlbum.album.userId , sharedAlbumId: sharedAlbum.albumId, albumName: albumName });
       }
     }
     setAlbums(decryptedAlbums);
@@ -147,9 +149,9 @@ export default function Dashboard() {
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {albums.map((album) => (
                 <Album
-                  key={album.id}
+                  key={album.sharedAlbumId}
                   setCurrentAlbum={() => {
-                    setCurrentAlbum(album.id);
+                    setCurrentAlbum(album.sharedAlbumId);
                   }}
                   albumName={album.albumName}
                 />
@@ -175,9 +177,9 @@ export default function Dashboard() {
               <nav className="grid gap-2 text-lg font-medium">
                 {albums.map((album) => (
                   <Album
-                    key={album.id}
+                    key={album.sharedAlbumId}
                     setCurrentAlbum={() => {
-                      setCurrentAlbum(album.id);
+                      setCurrentAlbum(album.sharedAlbumId);
                     }}
                     albumName={album.albumName}
                   />
@@ -192,15 +194,15 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-2">
               {currentAlbum !== "gallerie" &&
-                albums.some((val) => val.id === currentAlbum) && (
+                albums.some((val) => val.sharedAlbumId === currentAlbum && session.data?.user.userId === val.userId) && (
                   <ShareAlbumButton
-                    album={albums.find((val) => val.id === currentAlbum)!}
+                    album={albums.find((val) => val.sharedAlbumId === currentAlbum)!}
                   />
                 )}
               <span className="font-semibold">
                 {currentAlbum === "gallery"
                   ? "Gallery"
-                  : albums.find((val) => val.id === currentAlbum)?.albumName}
+                  : albums.find((val) => val.sharedAlbumId === currentAlbum)?.albumName}
               </span>
               <Badge>Nb pictures</Badge>
             </div>
@@ -221,14 +223,14 @@ export default function Dashboard() {
                   <PopoverTrigger asChild>
                     <Button variant="outline">Add in album</Button>
                   </PopoverTrigger>
-                  <PopoverContent>
+                  <PopoverContent className="flex flex-col gap-2">
                     {albums.map((album) => {
-                      if (!picture.idsAlbum.includes(album.id)) {
+                      if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
                         return (
                           <Button
-                            key={`${picture.idPicture}-${album.id}`} // Unique key for each button
+                            key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
                             onClick={() =>
-                              addPictureToAlbum(picture.idPicture, album.id)
+                              addPictureToAlbum(picture.idPicture, album.sharedAlbumId)
                             }
                           >
                             {album.albumName}

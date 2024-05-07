@@ -21,6 +21,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: DefaultSession["user"] & {
       id: string;
+      userId: string;
       // ...other properties
       // role: UserRole;
     };
@@ -46,13 +47,21 @@ declare module "next-auth/jwt" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session(data) {
+    async session(data) {
       const user = data.session.user;
       const session = data.session;
       if (user) {
         session.user = user;
         session.user.id = data.token.id;
       }
+      const userDevice = await db.userDevice.findFirst({
+        where: { id: session.user.id },
+      });
+
+      if (userDevice){
+        session.user.userId = userDevice.userId;
+      }
+    
       return session;
     },
     jwt({ token, user }) {
