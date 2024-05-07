@@ -30,7 +30,9 @@ services:
   minio:
     image: quay.io/minio/minio
     container_name: minio
-    command: server /data --console-address ":9001"
+    command: >
+        server /data --console-address ":9001" &&
+        sh /init_minio_keys.sh
     ports:
       # - "9000:9000"
       - "9001:9001"
@@ -39,6 +41,7 @@ services:
       MINIO_ROOT_PASSWORD: password
     volumes:
       - ./minio_data:/data
+      - ./init_minio_keys.sh:/init_minio_keys.sh
     depends_on:
       seqgelf:
         condition: service_started
