@@ -11,7 +11,6 @@ export const albumRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        albumName: z.string(),
         keys_user_device: z.array(
           z.object({
             deviceId: z.string(),

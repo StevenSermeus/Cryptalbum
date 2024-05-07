@@ -75,7 +75,6 @@ export default function CreateAlbumDialog() {
 
       await createMutation.mutateAsync(
         {
-          albumName: data.albumName,
           keys_user_device: userDeviceKey,
         },
         {
