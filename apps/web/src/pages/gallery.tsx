@@ -26,7 +26,7 @@ import {
 } from "@radix-ui/react-popover";
 import { toast } from "@/components/ui/use-toast";
 
-interface IAlbum {
+export interface IAlbum {
   id: string;
   albumName: string;
 }
@@ -121,7 +121,6 @@ export default function Dashboard() {
       });
     }
   }
-
 
   useEffect(() => {
     decypherPictures();

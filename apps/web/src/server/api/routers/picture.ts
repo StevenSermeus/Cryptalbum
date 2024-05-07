@@ -34,7 +34,7 @@ export const pictureRouter = createTRPCRouter({
             },
           });
           for (const key of input.keys_user_device) {
-            await t.shared.create({
+            await t.sharedPicture.create({
               data: {
                 picture: {
                   connect: {
@@ -71,14 +71,14 @@ export const pictureRouter = createTRPCRouter({
   getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
       // TODO: if input = gallery send all, else send the only pictures in album
-      let pictures_user: ({ albums: { id: string; }[]; shareds: { id: string; userId: string; photoId: string; key: string; createdAt: Date; updatedAt: Date; }[]; } & { id: string; userId: string; createdAt: Date; updatedAt: Date; })[] = []; 
+      let pictures_user: ({ albums: { id: string; }[]; sharedPictures: { id: string; deviceId: string; pictureId: string; key: string; createdAt: Date; updatedAt: Date; }[]; } & { id: string; userId: string; createdAt: Date; updatedAt: Date; })[] = []; 
       if (input === "gallery") {
         pictures_user = await ctx.db.picture.findMany({
           where: {
             userId: ctx.session.userId,
           },
           include: {
-            shareds: {
+            sharedPictures: {
               where: {
                 user_device: {
                   id: ctx.session.user.id,
@@ -103,7 +103,7 @@ export const pictureRouter = createTRPCRouter({
             },
           },
           include: {
-            shareds: {
+            sharedPictures: {
               where: {
                 user_device: {
                   id: ctx.session.user.id,
@@ -121,8 +121,8 @@ export const pictureRouter = createTRPCRouter({
       const files = [];
       for (const picturedb of pictures_user) {
         if (
-          picturedb.shareds.length !== 1 &&
-          picturedb.shareds[0]?.key === undefined
+          picturedb.sharedPictures.length !== 1 &&
+          picturedb.sharedPictures[0]?.key === undefined
         ) {
           return [];
         } else {
@@ -145,7 +145,7 @@ export const pictureRouter = createTRPCRouter({
           const file_encrypted = await promise;
           files.push({
             id: picturedb.id,
-            key: picturedb.shareds[0]?.key as string,
+            key: picturedb.sharedPictures[0]?.key as string,
             albums: picturedb.albums.map((album: { id: string; }) => album.id),
             file: file_encrypted,
           });
@@ -162,9 +162,9 @@ export const pictureRouter = createTRPCRouter({
   getSharedKeys: protectedProcedure
     .use(rateLimitedMiddleware)
     .query(async ({ ctx }) => {
-      const sharedKeys = await ctx.db.shared.findMany({
+      const sharedKeys = await ctx.db.sharedPicture.findMany({
         where: {
-          userId: ctx.session.user.id,
+          deviceId: ctx.session.user.id,
         },
         select: {
           key: true,

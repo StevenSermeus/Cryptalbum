@@ -46,7 +46,7 @@ export const deviceRouter = createTRPCRouter({
           if (device.isTrusted) {
             throw new TRPCError({ code: "BAD_REQUEST" });
           }
-          const deviceKeys = await t.shared.findMany({
+          const deviceKeys = await t.sharedPicture.findMany({
             where: { user_device: { id: ctx.session.user.id } },
             select: { id: true, picture: { select: { id: true } } },
           });
@@ -59,7 +59,7 @@ export const deviceRouter = createTRPCRouter({
               throw new TRPCError({ code: "BAD_REQUEST" });
             }
             console.log("key found", key.id, deviceKeysMap);
-            await t.shared.create({
+            await t.sharedPicture.create({
               data: {
                 user_device: {
                   connect: {
@@ -135,7 +135,7 @@ export const deviceRouter = createTRPCRouter({
           where: { id: deviceId },
           data: { isTrusted: false },
         });
-        await t.shared.deleteMany({
+        await t.sharedPicture.deleteMany({
           where: { user_device: { id: deviceId } },
         });
         await t.sharedAlbum.deleteMany({

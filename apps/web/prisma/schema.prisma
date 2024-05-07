@@ -63,18 +63,18 @@ model VerificationToken {
 }
 
 model UserDevice {
-  id           String                @id @default(cuid())
-  userId       String
-  publicKey    String                @unique
-  name         String
-  lastLogin    DateTime?
-  createdAt    DateTime              @default(now())
-  isTrusted    Boolean               @default(false)
-  updatedAt    DateTime              @updatedAt
-  user         User                  @relation(fields: [userId], references: [id])
-  challenges   UserDeviceChallenge[]
-  shareds      Shared[]
-  sharedAlbums SharedAlbum[]
+  id             String                @id @default(cuid())
+  userId         String
+  publicKey      String                @unique
+  name           String
+  lastLogin      DateTime?
+  createdAt      DateTime              @default(now())
+  isTrusted      Boolean               @default(false)
+  updatedAt      DateTime              @updatedAt
+  user           User                  @relation(fields: [userId], references: [id])
+  challenges     UserDeviceChallenge[]
+  sharedPictures SharedPicture[]
+  sharedAlbums   SharedAlbum[]
 }
 
 model UserDeviceChallenge {
@@ -89,24 +89,26 @@ model UserDeviceChallenge {
 }
 
 model Picture {
-  id          String        @id @default(cuid())
-  userId      String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  shareds Shared[]
-  albums       Album[]
-  owner        User          @relation(fields: [userId], references: [id])
+  id             String          @id @default(cuid())
+  userId         String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sharedPictures SharedPicture[]
+  albums         Album[]
+  owner          User            @relation(fields: [userId], references: [id])
 }
 
-model Shared {
+model SharedPicture {
   id          String     @id @default(cuid())
-  userId      String
-  photoId     String
+  deviceId    String
+  pictureId   String
   key         String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  user_device UserDevice @relation(fields: [userId], references: [id])
-  picture     Picture    @relation(fields: [photoId], references: [id])
+  user_device UserDevice @relation(fields: [deviceId], references: [id])
+  picture     Picture    @relation(fields: [pictureId], references: [id])
+
+  @@unique([deviceId, pictureId])
 }
 
 model Album {
@@ -126,4 +128,6 @@ model SharedAlbum {
   albumName    String
   user_device  UserDevice @relation(fields: [deviceId], references: [id])
   album        Album      @relation(fields: [albumId], references: [id])
+
+  @@unique([deviceId, albumId])
 }
