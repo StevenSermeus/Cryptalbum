@@ -187,7 +187,6 @@ export const pictureRouter = createTRPCRouter({
           picturedb.sharedPictures.length !== 1 &&
           picturedb.sharedPictures[0]?.key === undefined
         ) {
-          // TODO: TEMPORARY FIX find a better way to do it
           continue;
         } else {
           const minio_file = await ctx.minio.getObject(
