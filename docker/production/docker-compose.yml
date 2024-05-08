@@ -31,8 +31,7 @@ services:
     image: quay.io/minio/minio
     container_name: minio
     command: server /data --console-address ":9001" 
-    # the setup command doesn't work, so we need to create a script to run it
-    # or execute the following command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
+    # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
     ports:
       # - "9000:9000"
       - "9001:9001"

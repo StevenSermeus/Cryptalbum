@@ -27,8 +27,8 @@ export const env = createEnv({
       // VERCEL_URL doesn't include `https` so it cant be validated as a URL
       process.env.VERCEL ? z.string() : z.string().url(),
     ),
-    REDIS_URL: z.string(),
-    REDIS_PASSWORD: z.string(),
+    VALKEY_URL: z.string(),
+    VALKEY_PASSWORD: z.string(),
     RATE_LIMIT_WINDOW: z.number().default(60),
     RATE_LIMIT_MAX: z.number().default(1000),
     HMAC_SECRET: z.string(),
@@ -39,7 +39,7 @@ export const env = createEnv({
     MINIO_PORT: z.number().default(9000),
     MINIO_ENDPOINT: z.string().default("localhost"),
     SEQ_URL: z.string(),
-    LOGGER_SECRET: z.string().optional(),
+    LOGGER_SECRET: z.string().optional()
   },
 
   /**
@@ -61,8 +61,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    REDIS_URL: process.env.REDIS_URL,
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    VALKEY_URL: process.env.VALKEY_URL,
+    VALKEY_PASSWORD: process.env.VALKEY_PASSWORD,
     RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW ?? "60", 10),
     RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX ?? "1000", 10),
     HMAC_SECRET: process.env.HMAC_SECRET,
