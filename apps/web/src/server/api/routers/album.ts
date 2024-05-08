@@ -22,9 +22,7 @@ export const albumRouter = createTRPCRouter({
     .use(rateLimitedMiddleware)
     .mutation(async ({ ctx, input }) => {
       try {
-        logger.info(
-          `Creating a new album by ${ctx.session.userId}`
-        );
+        logger.info(`Creating a new album by ${ctx.session.userId}`);
         await ctx.db.$transaction(async (t) => {
           const album = await t.album.create({
             data: {
@@ -128,17 +126,20 @@ export const albumRouter = createTRPCRouter({
               },
             });
           }
-          // TODO: ONLY ADD PICTURES IF THEY ARE NOT IN SHAREDPICTURE TABLE ALREADY
+          const picturesToShare = [];
           for (const sharedPicturesPerDevice of input.sharedPictures) {
-            for (const picture of sharedPicturesPerDevice) {
-              await t.sharedPicture.create({
-                data: {
-                  deviceId: picture.deviceId,
-                  pictureId: picture.pictureId,
-                  key: picture.key,
-                },
-              });
-            }
+            picturesToShare.push(
+              ...sharedPicturesPerDevice.map((picture) => ({
+                deviceId: picture.deviceId,
+                pictureId: picture.pictureId,
+                key: picture.key,
+              })),
+            );
+
+            await t.sharedPicture.createMany({
+              data: picturesToShare,
+              skipDuplicates: true,
+            });
           }
         });
       } catch (e) {
