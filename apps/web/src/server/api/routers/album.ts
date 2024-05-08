@@ -22,6 +22,9 @@ export const albumRouter = createTRPCRouter({
     .use(rateLimitedMiddleware)
     .mutation(async ({ ctx, input }) => {
       try {
+        logger.info(
+          `Creating a new album by ${ctx.session.userId}`
+        );
         await ctx.db.$transaction(async (t) => {
           const album = await t.album.create({
             data: {

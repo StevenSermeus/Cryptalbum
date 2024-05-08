@@ -248,6 +248,28 @@ export const pictureRouter = createTRPCRouter({
     .use(rateLimitedMiddleware)
     .mutation(async ({ ctx, input }) => {
       try {
+
+        logger.info(
+          `Adding the picture ${input.pictureId} to album ${input.albumId} by ${ctx.session.userId}`
+        );
+        const picture = await ctx.db.picture.findUnique({
+          where: { id: input.pictureId },
+          select: { userId: true },
+        });
+
+        if (!picture || picture.userId !== ctx.session.userId) {
+          !picture
+            ? logger.warn(`Picture ${input.pictureId} not found to add to album`)
+            : logger.warn(
+              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+            );
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You are not the owner of this album or the album does not exist.",
+          });
+        }
+
         await ctx.db.picture.update({
           where: {
             id: input.pictureId,
@@ -260,6 +282,7 @@ export const pictureRouter = createTRPCRouter({
             },
           },
         });
+        
       } catch (e) {
         logger.error(
           `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
