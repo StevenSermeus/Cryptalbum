@@ -34,7 +34,7 @@ export const pictureRouter = createTRPCRouter({
             },
           });
           for (const key of input.keys_user_device) {
-            await t.shared.create({
+            await t.sharedPicture.create({
               data: {
                 picture: {
                   connect: {
@@ -65,32 +65,129 @@ export const pictureRouter = createTRPCRouter({
         });
       }
     }),
-  share: protectedProcedure.mutation(async () => {
-    return "Salut";
-  }),
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+
+  shareWithDevices: protectedProcedure
+    .input(
+      z.object({
+        pictureId: z.string(),
+        sharedPictures: z.array(
+          z.object({
+            deviceId: z.string(),
+            key: z.string(),
+          }),
+        ),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        logger.info(
+          `Starting the pictures share process by ${ctx.session.userId} for a list of devices`,
+        );
+        const picture = await ctx.db.picture.findUnique({
+          where: { id: input.pictureId },
+          select: { userId: true },
+        });
+
+        if (!picture || picture.userId !== ctx.session.userId) {
+          !picture
+            ? logger.warn(`Picture ${input.pictureId} not found to share`)
+            : logger.warn(
+              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+            );
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You are not the owner of this album or the album does not exist.",
+          });
+        }
+        await ctx.db.$transaction(async (t) => {
+          for (const sharedPicture of input.sharedPictures) {
+            await t.sharedPicture.create({
+              data: {
+                deviceId: sharedPicture.deviceId,
+                pictureId: input.pictureId,
+                key: sharedPicture.key,
+              },
+            });
+          }
+        });
+      } catch (e) {
+        logger.error(
+          `Failed to create album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create album. Please try again.",
+        });
+      }
+    }),
+  getAll: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     try {
-      const pictures_user = await ctx.db.picture.findMany({
-        where: {
-          userId: ctx.session.userId,
-        },
-        include: {
-          shareds: {
-            where: {
-              user_device: {
-                id: ctx.session.user.id,
+      let pictures_user: ({
+        albums: { id: string }[];
+        sharedPictures: {
+          id: string;
+          deviceId: string;
+          pictureId: string;
+          key: string;
+          createdAt: Date;
+          updatedAt: Date;
+        }[];
+      } & { id: string; userId: string; createdAt: Date; updatedAt: Date })[] =
+        [];
+      if (input === "gallery") {
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: ctx.session.userId,
+          },
+          include: {
+            sharedPictures: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
               },
             },
           },
-        },
-      });
+        });
+      } else {
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            albums: {
+              some: {
+                id: input,
+              },
+            },
+          },
+          include: {
+            sharedPictures: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        });
+      }
       const files = [];
       for (const picturedb of pictures_user) {
         if (
-          picturedb.shareds.length !== 1 &&
-          picturedb.shareds[0]?.key === undefined
+          picturedb.sharedPictures.length !== 1 &&
+          picturedb.sharedPictures[0]?.key === undefined
         ) {
-          return [];
+          continue;
         } else {
           const minio_file = await ctx.minio.getObject(
             "pictures",
@@ -110,8 +207,10 @@ export const pictureRouter = createTRPCRouter({
           });
           const file_encrypted = await promise;
           files.push({
+            userId : picturedb.userId,
             id: picturedb.id,
-            key: picturedb.shareds[0]?.key as string,
+            key: picturedb.sharedPictures[0]?.key as string,
+            albums: picturedb.albums.map((album: { id: string }) => album.id),
             file: file_encrypted,
           });
         }
@@ -127,9 +226,9 @@ export const pictureRouter = createTRPCRouter({
   getSharedKeys: protectedProcedure
     .use(rateLimitedMiddleware)
     .query(async ({ ctx }) => {
-      const sharedKeys = await ctx.db.shared.findMany({
+      const sharedKeys = await ctx.db.sharedPicture.findMany({
         where: {
-          userId: ctx.session.user.id,
+          deviceId: ctx.session.user.id,
         },
         select: {
           key: true,
@@ -137,5 +236,60 @@ export const pictureRouter = createTRPCRouter({
         },
       });
       return sharedKeys;
+    }),
+  addPictureToAlbum: protectedProcedure
+    .input(
+      z.object({
+        pictureId: z.string(),
+        albumId: z.string(),
+      }),
+    )
+    .use(rateLimitedMiddleware)
+    .mutation(async ({ ctx, input }) => {
+      try {
+
+        logger.info(
+          `Adding the picture ${input.pictureId} to album ${input.albumId} by ${ctx.session.userId}`
+        );
+        const picture = await ctx.db.picture.findUnique({
+          where: { id: input.pictureId },
+          select: { userId: true },
+        });
+
+        if (!picture || picture.userId !== ctx.session.userId) {
+          !picture
+            ? logger.warn(`Picture ${input.pictureId} not found to add to album`)
+            : logger.warn(
+              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+            );
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You are not the owner of this album or the album does not exist.",
+          });
+        }
+
+        await ctx.db.picture.update({
+          where: {
+            id: input.pictureId,
+          },
+          data: {
+            albums: {
+              connect: {
+                id: input.albumId,
+              },
+            },
+          },
+        });
+        
+      } catch (e) {
+        logger.error(
+          `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add picture to album. Please try again.",
+        });
+      }
     }),
 });

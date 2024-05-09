@@ -1,4 +1,4 @@
-import { Menu, Package2, Images } from "lucide-react";
+import { Images, Menu, Package2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,25 +8,64 @@ import { UploadFileDialog } from "@/components/UploadFileDialog";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 import { hexToArrayBuffer } from "@/utils/file";
+import { ToastAction } from "@/components/ui/toast";
+
 import {
   decrypt,
   decryptFileSymmetrical,
+  encrypt,
+  importRsaPublicKey,
   importSymmetricalKey,
   loadKeyPair,
 } from "@/utils/crypto";
+import { CreateAlbumButton } from "@/components/CreateAlbumButton";
+import { ShareAlbumButton } from "@/components/ShareAlbumButton";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@radix-ui/react-popover";
+import { toast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
+
+export interface IAlbum {
+  sharedAlbumId: string;
+  albumName: string;
+  userId: string;
+}
 
 export default function Dashboard() {
-  const [albums] = useState([
-    { id: "1", name: "Album 1" },
-    { id: "2", name: "Album 2" },
-    { id: "3", name: "Album 3" },
-  ]);
-  const [currentAlbum, setCurrentAlbum] = useState("gallerie");
-  const files = api.picture.getAll.useQuery();
-  const [pictures_preview, setPictures] = useState<string[]>([]);
+  const [albums, setAlbums] = useState<IAlbum[]>([]);
+  const [currentAlbum, setCurrentAlbum] = useState("gallery");
+  const utils_trpc = api.useUtils();
+  const session = useSession();
+  const files = api.picture.getAll.useQuery(currentAlbum);
+  const sharedAlbums = api.album.getAll.useQuery();
+  const addToAlbumMutation = api.picture.addPictureToAlbum.useMutation();
+  const sharePictureWithDevicesMutation =
+    api.picture.shareWithDevices.useMutation();
+  const userDevicesOfAlbumWithoutAccessToPicture =
+    api.album.userDevicesOfAlbumWithoutAccessToPicture.useMutation();
+
+  const [pictures_preview, setPictures] = useState<
+    {
+      userId: string;
+      idPicture: string;
+      symKey: string;
+      idsAlbum: string[];
+      url: string;
+    }[]
+  >([]);
 
   async function decypherPictures() {
-    const preview_url: string[] = [];
+    const pictures: {
+      userId: string;
+      idPicture: string;
+      symKey: string;
+      idsAlbum: string[];
+      url: string;
+    }[] = [];
     for (const picture of files.data || []) {
       const keyPair = await loadKeyPair();
       if (!keyPair) {
@@ -47,15 +86,111 @@ export default function Dashboard() {
         return;
       }
       const url = URL.createObjectURL(new Blob([file]));
-      preview_url.push(url);
+      pictures.push({
+        userId: picture.userId,
+        idPicture: picture.id,
+        symKey: sym_key_string,
+        idsAlbum: picture.albums,
+        url: url,
+      });
     }
-    setPictures(preview_url);
+    setPictures(pictures);
+  }
+
+  async function decipherAlbums() {
+    const decryptedAlbums: IAlbum[] = [];
+    const keyPair = await loadKeyPair();
+    if (!keyPair) {
+      return;
+    }
+
+    for (const sharedAlbum of sharedAlbums.data || []) {
+      const encryptedAlbumName = sharedAlbum.albumName;
+      const albumName = await decrypt(
+        keyPair.privateKey,
+        hexToArrayBuffer(encryptedAlbumName),
+      );
+      if (albumName) {
+        decryptedAlbums.push({
+          userId: sharedAlbum.album.userId,
+          sharedAlbumId: sharedAlbum.albumId,
+          albumName: albumName,
+        });
+      }
+    }
+    setAlbums(decryptedAlbums);
+  }
+
+  async function addPictureToAlbum(pictureId: string, albumId: string) {
+    try {
+      await addToAlbumMutation.mutateAsync(
+        {
+          pictureId,
+          albumId,
+        },
+        {
+          onSuccess: () => {
+            utils_trpc.invalidate(undefined, {
+              refetchType: "all",
+              queryKey: ["albums.getAll"],
+            });
+            toast({
+              title: "Picture added to album",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+        },
+      );
+
+      const sharedPictures: {
+        deviceId: string;
+        key: string;
+      }[] = [];
+      const p = pictures_preview.find((p) => p.idPicture === pictureId);
+      if (!p) {
+        return;
+      }
+      const devices =
+        await userDevicesOfAlbumWithoutAccessToPicture.mutateAsync({
+          albumId: albumId,
+          pictureId: pictureId,
+        });
+      for (const device of devices || []) {
+        console.log(`the p key is ${p?.symKey}`);
+
+        const publicKey = await importRsaPublicKey(device.publicKey);
+        const encryptedKey = await encrypt(publicKey, p.symKey);
+        if (!encryptedKey) {
+          throw new Error("Failed to encrypt key");
+        }
+        sharedPictures.push({
+          deviceId: device.deviceId,
+          key: encryptedKey,
+        });
+      }
+
+      sharePictureWithDevicesMutation.mutate({
+        pictureId: pictureId,
+        sharedPictures: sharedPictures,
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Failed to add photo into album",
+        description: "No key pair found",
+        variant: "destructive",
+        action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+      });
+    }
   }
 
   useEffect(() => {
     decypherPictures();
-    console.log(files.data);
   }, [files.data]);
+
+  useEffect(() => {
+    decipherAlbums();
+  }, [sharedAlbums.data]);
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[200px_1fr]">
@@ -64,22 +199,52 @@ export default function Dashboard() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              <span className="" onClick={() => setCurrentAlbum("gallerie")}>
+              <span className="" onClick={() => setCurrentAlbum("gallery")}>
                 Pictures
               </span>
             </div>
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {albums.map((album) => (
-                <Album
-                  key={album.id}
-                  setCurrentAlbum={() => {
-                    setCurrentAlbum(album.id);
-                  }}
-                  albumName={album.name}
-                />
-              ))}
+              {albums.some(
+                (album) => album.userId === session.data?.user.userId,
+              ) && (
+                  <>
+                    Your albums
+                    {albums.map(
+                      (album) =>
+                        album.userId === session.data?.user.userId && (
+                          <Album
+                            key={album.sharedAlbumId}
+                            setCurrentAlbum={() => {
+                              setCurrentAlbum(album.sharedAlbumId);
+                            }}
+                            albumName={album.albumName}
+                          />
+                        ),
+                    )}
+                    <hr />
+                  </>
+                )}
+              {albums.some(
+                (album) => album.userId !== session.data?.user.userId,
+              ) && (
+                  <>
+                    Shared albums
+                    {albums.map(
+                      (album) =>
+                        album.userId !== session.data?.user.userId && (
+                          <Album
+                            key={album.sharedAlbumId}
+                            setCurrentAlbum={() => {
+                              setCurrentAlbum(album.sharedAlbumId);
+                            }}
+                            albumName={album.albumName}
+                          />
+                        ),
+                    )}
+                  </>
+                )}
             </nav>
           </div>
         </div>
@@ -101,36 +266,87 @@ export default function Dashboard() {
               <nav className="grid gap-2 text-lg font-medium">
                 {albums.map((album) => (
                   <Album
-                    key={album.id}
+                    key={album.sharedAlbumId}
                     setCurrentAlbum={() => {
-                      setCurrentAlbum(album.id);
+                      setCurrentAlbum(album.sharedAlbumId);
                     }}
-                    albumName={album.name}
+                    albumName={album.albumName}
                   />
                 ))}
               </nav>
             </SheetContent>
           </Sheet>
           <div className="flex w-full flex-1 items-center justify-between">
-            <UploadFileDialog />
+            <div className="flex justify-between gap-2">
+              <CreateAlbumButton />
+              {currentAlbum === "gallery" && <UploadFileDialog />}
+            </div>
             <div className="flex items-center gap-2">
+              {currentAlbum !== "gallerie" &&
+                albums.some(
+                  (val) =>
+                    val.sharedAlbumId === currentAlbum &&
+                    session.data?.user.userId === val.userId,
+                ) && (
+                  <ShareAlbumButton
+                    album={
+                      albums.find((val) => val.sharedAlbumId === currentAlbum)!
+                    }
+                    pictures={pictures_preview}
+                  />
+                )}
               <span className="font-semibold">
-                {currentAlbum === "gallerie"
-                  ? "Gallerie"
-                  : albums.find((val) => val.id === currentAlbum)?.name}
+                {currentAlbum === "gallery"
+                  ? "Gallery"
+                  : albums.find((val) => val.sharedAlbumId === currentAlbum)
+                    ?.albumName}
               </span>
               <Badge>Nb pictures</Badge>
             </div>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {pictures_preview.map((picture, index) => (
-            <img
-              key={index}
-              src={picture}
-              alt="Picture"
-              className="h-96 w-full rounded-lg object-cover"
-            />
+        <main className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+          {pictures_preview.map((picture) => (
+            <Card key={picture.idPicture}>
+              <CardContent>
+                <img
+                  src={picture.url}
+                  alt="Picture"
+                  className="h-96 max-w-full  rounded-lg object-cover"
+                />
+              </CardContent>
+              {currentAlbum === "gallery" &&
+                picture.userId === session.data?.user.userId && (
+                  <CardFooter className="flex justify-between">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline">Add in album</Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="flex flex-col gap-1">
+                        {albums.map((album) => {
+                          if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
+                            return (
+                              <Button
+                                key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
+                                onClick={() =>
+                                  addPictureToAlbum(
+                                    picture.idPicture,
+                                    album.sharedAlbumId,
+                                  )
+                                }
+                              >
+                                {album.albumName}
+                              </Button>
+                            );
+                          }
+                          return null; // Ensure that nothing is rendered if condition fails
+                        })}
+                      </PopoverContent>
+                    </Popover>
+                    <Button>Share</Button>
+                  </CardFooter>
+                )}
+            </Card>
           ))}
         </main>
       </div>
