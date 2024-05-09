@@ -28,7 +28,3 @@ sh docker/dev/init_minio_keys.sh
 pnpm install
 pnpm run dev
 ```
-
-
-
-
