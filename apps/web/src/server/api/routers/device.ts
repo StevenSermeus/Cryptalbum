@@ -25,9 +25,15 @@ export const deviceRouter = createTRPCRouter({
             id: z.string(),
           }),
         ),
+        albumsForDevice: z.array(
+          z.object({
+            albumId: z.string(),
+            albumName: z.string(),
+          }),
+        ),
       }),
     )
-    .mutation(async ({ input: { deviceId, keys }, ctx }) => {
+    .mutation(async ({ input: { deviceId, keys, albumsForDevice }, ctx }) => {
       try {
         console.log("trustDevice", deviceId, keys);
         await ctx.db.$transaction(async (t) => {
@@ -40,7 +46,7 @@ export const deviceRouter = createTRPCRouter({
           if (device.isTrusted) {
             throw new TRPCError({ code: "BAD_REQUEST" });
           }
-          const deviceKeys = await t.shared.findMany({
+          const deviceKeys = await t.sharedPicture.findMany({
             where: { user_device: { id: ctx.session.user.id } },
             select: { id: true, picture: { select: { id: true } } },
           });
@@ -53,7 +59,7 @@ export const deviceRouter = createTRPCRouter({
               throw new TRPCError({ code: "BAD_REQUEST" });
             }
             console.log("key found", key.id, deviceKeysMap);
-            await t.shared.create({
+            await t.sharedPicture.create({
               data: {
                 user_device: {
                   connect: {
@@ -66,6 +72,34 @@ export const deviceRouter = createTRPCRouter({
                   },
                 },
                 key: key.key,
+              },
+            });
+          }
+          const deviceAlbums = await t.sharedAlbum.findMany({
+            where: { user_device: { id: ctx.session.user.id } },
+            select: { id: true, albumId: true },
+          });
+          const deviceAlbumsMap = new Map(
+            deviceAlbums.map((a) => [a.albumId, a.id]),
+          );
+          for (const album of albumsForDevice) {
+            if (!deviceAlbumsMap.has(album.albumId)) {
+              console.log("album not found", album.albumId, deviceAlbumsMap);
+              throw new TRPCError({ code: "BAD_REQUEST" });
+            }
+            await t.sharedAlbum.create({
+              data: {
+                albumName: album.albumName,
+                user_device: {
+                  connect: {
+                    id: deviceId,
+                  },
+                },
+                album: {
+                  connect: {
+                    id: album.albumId,
+                  },
+                },
               },
             });
           }
@@ -101,8 +135,11 @@ export const deviceRouter = createTRPCRouter({
           where: { id: deviceId },
           data: { isTrusted: false },
         });
-        await t.shared.deleteMany({
+        await t.sharedPicture.deleteMany({
           where: { user_device: { id: deviceId } },
+        });
+        await t.sharedAlbum.deleteMany({
+          where: { deviceId: deviceId },
         });
       });
     }),
