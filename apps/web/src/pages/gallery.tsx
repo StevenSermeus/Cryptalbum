@@ -28,6 +28,7 @@ import {
 } from "@radix-ui/react-popover";
 import { toast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
+import { SharePictureButton } from "@/components/SharePictureButton";
 
 export interface IAlbum {
   sharedAlbumId: string;
@@ -200,17 +201,25 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
               <span className="" onClick={() => setCurrentAlbum("gallery")}>
-                Pictures
+                Gallery
               </span>
             </div>
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              <div className="mb-5">
+                <span
+                  className="cursor-pointer"
+                  onClick={() => setCurrentAlbum("sharedPictures")}
+                >
+                  Shared With Me
+                </span>
+              </div>
               {albums.some(
                 (album) => album.userId === session.data?.user.userId,
               ) && (
-                  <>
-                    Your albums
+                  <div className="mb-5">
+                    <span>Your albums</span>
                     {albums.map(
                       (album) =>
                         album.userId === session.data?.user.userId && (
@@ -223,14 +232,13 @@ export default function Dashboard() {
                           />
                         ),
                     )}
-                    <hr />
-                  </>
+                  </div>
                 )}
               {albums.some(
                 (album) => album.userId !== session.data?.user.userId,
               ) && (
-                  <>
-                    Shared albums
+                  <div className="mb-5">
+                    <span>Shared albums</span>
                     {albums.map(
                       (album) =>
                         album.userId !== session.data?.user.userId && (
@@ -243,7 +251,7 @@ export default function Dashboard() {
                           />
                         ),
                     )}
-                  </>
+                  </div>
                 )}
             </nav>
           </div>
@@ -343,7 +351,10 @@ export default function Dashboard() {
                         })}
                       </PopoverContent>
                     </Popover>
-                    <Button>Share</Button>
+                    <SharePictureButton
+                      pictureId={picture.idPicture}
+                      symKey={picture.symKey}
+                    />
                   </CardFooter>
                 )}
             </Card>
