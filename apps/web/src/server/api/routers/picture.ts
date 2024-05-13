@@ -156,6 +156,26 @@ export const pictureRouter = createTRPCRouter({
             },
           },
         });
+      } else if (input === "sharedPictures") {
+        pictures_user = await ctx.db.picture.findMany({
+          where: {
+            userId: { not: ctx.session.userId },
+          },
+          include: {
+            sharedPictures: {
+              where: {
+                user_device: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+            albums: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        });
       } else {
         pictures_user = await ctx.db.picture.findMany({
           where: {
@@ -207,7 +227,7 @@ export const pictureRouter = createTRPCRouter({
           });
           const file_encrypted = await promise;
           files.push({
-            userId : picturedb.userId,
+            userId: picturedb.userId,
             id: picturedb.id,
             key: picturedb.sharedPictures[0]?.key as string,
             albums: picturedb.albums.map((album: { id: string }) => album.id),
@@ -247,9 +267,8 @@ export const pictureRouter = createTRPCRouter({
     .use(rateLimitedMiddleware)
     .mutation(async ({ ctx, input }) => {
       try {
-
         logger.info(
-          `Adding the picture ${input.pictureId} to album ${input.albumId} by ${ctx.session.userId}`
+          `Adding the picture ${input.pictureId} to album ${input.albumId} by ${ctx.session.userId}`,
         );
         const picture = await ctx.db.picture.findUnique({
           where: { id: input.pictureId },
@@ -258,7 +277,9 @@ export const pictureRouter = createTRPCRouter({
 
         if (!picture || picture.userId !== ctx.session.userId) {
           !picture
-            ? logger.warn(`Picture ${input.pictureId} not found to add to album`)
+            ? logger.warn(
+              `Picture ${input.pictureId} not found to add to album`,
+            )
             : logger.warn(
               `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
             );
@@ -281,7 +302,6 @@ export const pictureRouter = createTRPCRouter({
             },
           },
         });
-        
       } catch (e) {
         logger.error(
           `Failed to add picture to album for user ${ctx.session.userId} with error: ${e}`,
