@@ -91,8 +91,8 @@ export const albumRouter = createTRPCRouter({
           !album
             ? logger.warn(`Album ${input.albumId} not found to share`)
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
@@ -211,8 +211,8 @@ export const albumRouter = createTRPCRouter({
         !album
           ? logger.warn(`Album ${input.albumId} not found`)
           : logger.warn(
-            `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
-          );
+              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+            );
         throw new TRPCError({
           code: "FORBIDDEN",
           message:

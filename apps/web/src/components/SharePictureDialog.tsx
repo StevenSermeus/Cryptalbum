@@ -72,10 +72,30 @@ export default function SharePictureDialog({
         });
       }
 
-      sharePictureMutation.mutate({
-        pictureId: pictureId,
-        sharedPictures: sharedPicture,
-      });
+      sharePictureMutation.mutate(
+        {
+          pictureId: pictureId,
+          sharedPictures: sharedPicture,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Image shared successfully",
+              description: "Image shared successfully",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+          onError: (error) => {
+            console.error(error);
+            toast({
+              title: "Failed to share image",
+              description: "Failed to share image",
+              variant: "destructive",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+        },
+      );
     } catch (error) {
       console.error(error);
       toast({

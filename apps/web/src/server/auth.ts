@@ -58,10 +58,10 @@ export const authOptions: NextAuthOptions = {
         where: { id: session.user.id },
       });
 
-      if (userDevice){
+      if (userDevice) {
         session.user.userId = userDevice.userId;
       }
-    
+
       return session;
     },
     jwt({ token, user }) {

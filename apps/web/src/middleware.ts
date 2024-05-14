@@ -20,5 +20,5 @@ export default withAuth(
 );
 // Match a route like `/demo`
 export const config = {
-  matcher: ["/gallery", "/auth/device", "/profile"],
+  matcher: ["/gallery", "/auth/device", "/auth/profile"],
 };

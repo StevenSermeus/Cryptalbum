@@ -93,8 +93,8 @@ export const pictureRouter = createTRPCRouter({
           !picture
             ? logger.warn(`Picture ${input.pictureId} not found to share`)
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
@@ -278,11 +278,11 @@ export const pictureRouter = createTRPCRouter({
         if (!picture || picture.userId !== ctx.session.userId) {
           !picture
             ? logger.warn(
-              `Picture ${input.pictureId} not found to add to album`,
-            )
+                `Picture ${input.pictureId} not found to add to album`,
+              )
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:

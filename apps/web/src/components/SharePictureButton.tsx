@@ -13,7 +13,7 @@ interface PictureProps {
   symKey: string;
 }
 
-export function SharePictureButton({pictureId, symKey} : PictureProps) {
+export function SharePictureButton({ pictureId, symKey }: PictureProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>

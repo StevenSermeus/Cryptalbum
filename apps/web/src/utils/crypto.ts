@@ -37,7 +37,7 @@ export async function loadKeyPair(): Promise<CryptoKeyPair | null> {
   if (!publicKeyString || !privateKeyString) {
     return null;
   }
-
+  console.log(publicKeyString);
   const publicKey = await crypto.importKey(
     "jwk",
     JSON.parse(publicKeyString),

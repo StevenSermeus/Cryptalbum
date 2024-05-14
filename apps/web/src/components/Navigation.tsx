@@ -93,6 +93,17 @@ export function Navigation() {
           )}
         </NavigationMenuItem>
         <NavigationMenuItem>
+          {session.data ? (
+            <Link href="/auth/profile" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Profile
+              </NavigationMenuLink>
+            </Link>
+          ) : (
+            <></>
+          )}
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div>

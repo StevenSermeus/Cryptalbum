@@ -120,8 +120,14 @@ export default function Device() {
 
   async function trustDevice(deviceId: string, publicKey: string) {
     try {
-      const keys = await encryptPictureKeysForNewDevice(devicesKeys.data ?? [], publicKey);
-      const albumsForDevice = await encryptAlbumNamesForNewDevice(sharedAlbums.data ?? [], publicKey);
+      const keys = await encryptPictureKeysForNewDevice(
+        devicesKeys.data ?? [],
+        publicKey,
+      );
+      const albumsForDevice = await encryptAlbumNamesForNewDevice(
+        sharedAlbums.data ?? [],
+        publicKey,
+      );
 
       if (!keys) {
         console.error("Failed to encrypt keys");

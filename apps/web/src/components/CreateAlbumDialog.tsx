@@ -62,7 +62,8 @@ export default function CreateAlbumDialog() {
         return;
       }
 
-      const userDeviceKey: { deviceId: string; encryptedAlbumName: string }[] = [];
+      const userDeviceKey: { deviceId: string; encryptedAlbumName: string }[] =
+        [];
 
       for (const userDevice of userDevicesQuery.data) {
         const publicKey = await importRsaPublicKey(userDevice.publicKey);

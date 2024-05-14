@@ -170,10 +170,27 @@ export default function Dashboard() {
         });
       }
 
-      sharePictureWithDevicesMutation.mutate({
-        pictureId: pictureId,
-        sharedPictures: sharedPictures,
-      });
+      sharePictureWithDevicesMutation.mutate(
+        {
+          pictureId: pictureId,
+          sharedPictures: sharedPictures,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Picture shared with devices",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Failed to share picture with devices",
+              variant: "destructive",
+              action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+            });
+          },
+        },
+      );
     } catch (error) {
       console.error(error);
       toast({
@@ -218,41 +235,41 @@ export default function Dashboard() {
               {albums.some(
                 (album) => album.userId === session.data?.user.userId,
               ) && (
-                  <div className="mb-5">
-                    <span>Your albums</span>
-                    {albums.map(
-                      (album) =>
-                        album.userId === session.data?.user.userId && (
-                          <Album
-                            key={album.sharedAlbumId}
-                            setCurrentAlbum={() => {
-                              setCurrentAlbum(album.sharedAlbumId);
-                            }}
-                            albumName={album.albumName}
-                          />
-                        ),
-                    )}
-                  </div>
-                )}
+                <div className="mb-5">
+                  <span>Your albums</span>
+                  {albums.map(
+                    (album) =>
+                      album.userId === session.data?.user.userId && (
+                        <Album
+                          key={album.sharedAlbumId}
+                          setCurrentAlbum={() => {
+                            setCurrentAlbum(album.sharedAlbumId);
+                          }}
+                          albumName={album.albumName}
+                        />
+                      ),
+                  )}
+                </div>
+              )}
               {albums.some(
                 (album) => album.userId !== session.data?.user.userId,
               ) && (
-                  <div className="mb-5">
-                    <span>Shared albums</span>
-                    {albums.map(
-                      (album) =>
-                        album.userId !== session.data?.user.userId && (
-                          <Album
-                            key={album.sharedAlbumId}
-                            setCurrentAlbum={() => {
-                              setCurrentAlbum(album.sharedAlbumId);
-                            }}
-                            albumName={album.albumName}
-                          />
-                        ),
-                    )}
-                  </div>
-                )}
+                <div className="mb-5">
+                  <span>Shared albums</span>
+                  {albums.map(
+                    (album) =>
+                      album.userId !== session.data?.user.userId && (
+                        <Album
+                          key={album.sharedAlbumId}
+                          setCurrentAlbum={() => {
+                            setCurrentAlbum(album.sharedAlbumId);
+                          }}
+                          albumName={album.albumName}
+                        />
+                      ),
+                  )}
+                </div>
+              )}
             </nav>
           </div>
         </div>
@@ -307,7 +324,7 @@ export default function Dashboard() {
                 {currentAlbum === "gallery"
                   ? "Gallery"
                   : albums.find((val) => val.sharedAlbumId === currentAlbum)
-                    ?.albumName}
+                      ?.albumName}
               </span>
               <Badge>Nb pictures</Badge>
             </div>

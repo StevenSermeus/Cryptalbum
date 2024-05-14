@@ -25,15 +25,14 @@ const formSchema = z.object({
 interface AlbumProps {
   albumId: string;
   albumName: string;
-  pictures: { idPicture: string; symKey: string; }[];
+  pictures: { idPicture: string; symKey: string }[];
 }
 
 interface SharedPicture {
   deviceId: string;
   pictureId: string;
   key: string;
-};
-
+}
 
 export default function ShareAlbumDialog({
   albumId,
@@ -70,7 +69,7 @@ export default function ShareAlbumDialog({
         encryptedAlbumName: string;
       }[] = [];
 
-      const sharedPictures: SharedPicture[][] = []
+      const sharedPictures: SharedPicture[][] = [];
       for (const device of friendWithDevices.devices) {
         const publicKey = await importRsaPublicKey(device.publicKey);
         const encryptedAlbumName = await encrypt(publicKey, albumName);
@@ -82,7 +81,7 @@ export default function ShareAlbumDialog({
         const sharedPicturesPerDevice: SharedPicture[] = [];
 
         for (const picture of pictures) {
-          const encryptedKey = await encrypt(publicKey, picture.symKey)
+          const encryptedKey = await encrypt(publicKey, picture.symKey);
           if (!encryptedKey) {
             throw new Error("Failed to encrypt key");
           }
@@ -91,21 +90,20 @@ export default function ShareAlbumDialog({
             deviceId: device.id,
             pictureId: picture.idPicture,
             key: encryptedKey,
-          })
+          });
         }
 
-        sharedPictures.push(sharedPicturesPerDevice)
+        sharedPictures.push(sharedPicturesPerDevice);
       }
 
-      console.log(`albumId: ${albumId}`)
-      console.log(...sharedAlbum)
+      console.log(`albumId: ${albumId}`);
+      console.log(...sharedAlbum);
 
       await shareAlbumMutation.mutateAsync({
         albumId: albumId,
         sharedAlbumWithDevice: sharedAlbum,
-        sharedPictures: sharedPictures, 
+        sharedPictures: sharedPictures,
       });
-
     } catch (e) {
       console.error(e);
       const errorMessage =

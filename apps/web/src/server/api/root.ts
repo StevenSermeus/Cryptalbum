@@ -14,7 +14,7 @@ export const appRouter = createTRPCRouter({
   picture: pictureRouter,
   user: userRouter,
   device: deviceRouter,
-  album: albumRouter
+  album: albumRouter,
 });
 
 // export type definition of API
