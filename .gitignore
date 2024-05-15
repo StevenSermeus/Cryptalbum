@@ -36,6 +36,10 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+*.key
+*.cert
+*.csr
+*.crt
 
 # docker
 

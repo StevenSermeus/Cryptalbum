@@ -1,5 +1,34 @@
 version: "3.9"
 services:
+
+  push-db:
+    build:
+      context: ../../
+      dockerfile: docker/production/push-db.dockerfile
+    image: push-db-img
+    container_name: push-db
+    depends_on:
+      - postgres
+
+  reverse-proxy:
+    image: nginx:latest
+    container_name: nginx-proxy
+    restart: always
+    volumes:
+      - ./conf/nginx/ssl:/var/www/ssl/:ro
+      - ./conf/nginx/conf:/etc/nginx/conf.d/:ro
+      - ./conf/nginx/html:/var/www/html:ro
+    ports:
+      - "8080:80"
+      - "8443:443"
+    links:
+      - app
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "nginx-proxy"
+
   app:
     platform: "linux/amd64"
     build:
@@ -8,9 +37,8 @@ services:
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
-    ports:
-      - "3000:3000"
     image: t3-app
+    container_name: app
 
     depends_on:
       - minio
@@ -18,6 +46,11 @@ services:
       - valkey
       - seqgelf
       - seq
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "app"
   # docs:
   #   platform: "linux/amd64"
   #   build:
@@ -27,21 +60,20 @@ services:
   #   ports:
   #     - "3001:3000"
   #   image: docs
+  
   minio:
     image: quay.io/minio/minio
     container_name: minio
     command: server /data --console-address ":9001" 
-    # the setup command doesn't work, so we need to create a script to run it
-    # or execute the following command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
+    # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
     ports:
-      # - "9000:9000"
       - "9001:9001"
     environment:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: password
     volumes:
       - ./minio_data:/data
-      - ./init_minio_keys.sh:/init_minio_keys.sh
+      - ./conf/minio/init_minio_keys.sh:/init_minio_keys.sh
     depends_on:
       seqgelf:
         condition: service_started
@@ -50,15 +82,14 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "minio"
+
   postgres:
     image: postgres:16
-    container_name: postgres_16
+    container_name: postgres
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "password"
       POSTGRES_DB: "postgres"
-    # ports:
-    #   - "5432:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     depends_on:
@@ -69,15 +100,15 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "postgres"
-  #To add password to valeky, you need to mount the config file to the container
+
+  #To add password to valkey, you need to mount the config file to the container
   #Valkey is the real open source version of redis ^^
   valkey:
     image: valkey/valkey:7.2
-    container_name: valkey_7.2
-    # ports:
-    #   - "6379:6379"
+    container_name: valkey
     volumes:
       - ./valkey_data:/data
+      - ./conf/valkey/valkey.conf:/usr/local/etc/valkey/valkey.conf
     depends_on:
       seqgelf:
         condition: service_started
@@ -86,6 +117,8 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "valkey"
+    # change config file used by valkey
+    command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
   seq:
     image: datalust/seq:latest
     container_name: seq
@@ -107,3 +140,12 @@ services:
     depends_on:
       seq:
         condition: service_started
+
+# TODO
+# Add new container node to push prisma schema to the database postgres
+# volume sur le répertoir du schema prisma
+# env file for DATABASE_URL in container node
+# Instead of execute the command in app container
+
+# TODO
+# Config reverse proxy rediriger le traffic http vers https

@@ -40,7 +40,7 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "postgres"
-  #To add password to valeky, you need to mount the config file to the container
+  #To add password to valkey, you need to mount the config file to the container
   #Valkey is the real open source version of redis ^^
   valkey:
     image: valkey/valkey:7.2
@@ -49,6 +49,7 @@ services:
       - "6379:6379"
     volumes:
       - ./valkey_data:/data
+      - ./valkey.conf:/usr/local/etc/valkey/valkey.conf
     depends_on:
       seqgelf:
         condition: service_started
@@ -57,6 +58,9 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "valkey"
+    # change config file used by valkey
+    command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
+    
   seq:
     image: datalust/seq:latest
     container_name: seq_dev
