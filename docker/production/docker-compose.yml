@@ -13,13 +13,14 @@ services:
     build:
       context: .
       dockerfile: ./nginx.dockerfile
+    image: reverse-proxy-img
     restart: always
     container_name: reverse-proxy
     volumes:
       - ./conf/nginx/certificates:/etc/nginx/certs
     ports:
       - "8080:80"
-      - "443:443"
+      - "8443:443"
     links:
       - app
     logging:
@@ -30,7 +31,7 @@ services:
     networks:
       default:
         aliases:
-          - t3.local
+          - vimsnap.local
 
   app:
     platform: "linux/amd64"
@@ -40,8 +41,8 @@ services:
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
-    image: t3-app
-    container_name: app
+    image: vimsnap-img
+    container_name: vimsnap
     # extra_hosts:
     #   - "t3.local:reverse-proxy"
     depends_on:
