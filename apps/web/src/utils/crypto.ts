@@ -2,7 +2,6 @@ import * as crypto_backend from "crypto";
 
 const crypto =
   typeof window === "undefined" ? crypto_backend.subtle : window.crypto.subtle;
-
 export async function generateAsymmetricalKeyPair(): Promise<CryptoKeyPair> {
   const algorithm: RsaHashedKeyGenParams = {
     name: "RSA-OAEP",

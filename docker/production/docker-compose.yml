@@ -1,6 +1,5 @@
 version: "3.9"
 services:
-
   push-db:
     build:
       context: ../../
@@ -11,16 +10,16 @@ services:
       - postgres
 
   reverse-proxy:
-    image: nginx:latest
-    container_name: nginx-proxy
+    build:
+      context: .
+      dockerfile: ./nginx.dockerfile
     restart: always
+    container_name: reverse-proxy
     volumes:
-      - ./conf/nginx/ssl:/var/www/ssl/:ro
-      - ./conf/nginx/conf:/etc/nginx/conf.d/:ro
-      - ./conf/nginx/html:/var/www/html:ro
+      - ./conf/nginx/certificates:/etc/nginx/certs
     ports:
       - "8080:80"
-      - "8443:443"
+      - "443:443"
     links:
       - app
     logging:
@@ -28,6 +27,10 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "nginx-proxy"
+    networks:
+      default:
+        aliases:
+          - t3.local
 
   app:
     platform: "linux/amd64"
@@ -39,7 +42,8 @@ services:
     working_dir: /app
     image: t3-app
     container_name: app
-
+    # extra_hosts:
+    #   - "t3.local:reverse-proxy"
     depends_on:
       - minio
       - postgres
@@ -60,11 +64,11 @@ services:
   #   ports:
   #     - "3001:3000"
   #   image: docs
-  
+
   minio:
     image: quay.io/minio/minio
     container_name: minio
-    command: server /data --console-address ":9001" 
+    command: server /data --console-address ":9001"
     # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
     ports:
       - "9001:9001"
@@ -140,7 +144,6 @@ services:
     depends_on:
       seq:
         condition: service_started
-
 # TODO
 # Add new container node to push prisma schema to the database postgres
 # volume sur le répertoir du schema prisma

@@ -14,4 +14,4 @@ docker exec minio sh /init_minio_keys.sh
 # request to add the host in the /etc/hosts file
 echo "Please add the following line in your /etc/hosts file : "
 echo "127.0.0.1 t3-app.local"
-echo "Now, you can access the application at https://t3app.local:8443/"
+echo "Now, you can access the application at https://t3.com:8443/"
