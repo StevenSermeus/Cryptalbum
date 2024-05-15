@@ -4,5 +4,5 @@ FROM nginx:latest
 COPY ./conf/nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Exposer les ports 80
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+EXPOSE 8443
