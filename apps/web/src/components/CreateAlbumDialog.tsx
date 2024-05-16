@@ -96,7 +96,7 @@ export default function CreateAlbumDialog() {
       console.error(e);
       toast({
         title: "Failed to create album",
-        description: "The server trolled us",
+        description: `${e}`,
         variant: "destructive",
         action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
       });

@@ -195,7 +195,7 @@ export default function Dashboard() {
       console.error(error);
       toast({
         title: "Failed to add photo into album",
-        description: "No key pair found",
+        description: `${error}`,
         variant: "destructive",
         action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
       });
@@ -348,7 +348,7 @@ export default function Dashboard() {
                         <Button variant="outline">Add in album</Button>
                       </PopoverTrigger>
                       <PopoverContent className="flex flex-col gap-1">
-                        {albums.map((album) => {
+                        {albums.filter(e => e.userId === session.data?.user.userId).map((album) => {
                           if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
                             return (
                               <Button

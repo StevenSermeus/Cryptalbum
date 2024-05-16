@@ -106,11 +106,10 @@ export default function ShareAlbumDialog({
       });
     } catch (e) {
       console.error(e);
-      const errorMessage =
         e instanceof TRPCClientError ? e.message : "The server trolled us";
       toast({
         title: "Failed to create album",
-        description: errorMessage,
+        description: `${e}`,
         variant: "destructive",
         action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
       });

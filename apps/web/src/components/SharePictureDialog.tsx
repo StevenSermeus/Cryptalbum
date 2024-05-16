@@ -100,7 +100,7 @@ export default function SharePictureDialog({
       console.error(error);
       toast({
         title: "Failed to share image into album",
-        description: "Failed to share image into album",
+        description: `${error}`,
         variant: "destructive",
         action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
       });
