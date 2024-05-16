@@ -13,7 +13,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 export const db = globalForPrisma.prisma ?? createPrismaClient();
-console.log(env.VALKEY_URL,"VALKEY_URL");
+console.log(env.VALKEY_URL, "VALKEY_URL");
 const createCacheClient = () => {
   const client = createClient({
     socket: {

@@ -41,6 +41,10 @@ yarn-error.log*
 *.csr
 *.crt
 
+.minted_output/
+mermaid-filter.err
+*.pdf
+
 # docker
 
 postgres_data/
