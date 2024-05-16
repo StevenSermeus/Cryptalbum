@@ -4,3 +4,5 @@ docker
 .next
 .DS_Store
 .env.example
+.env.local
+.env
