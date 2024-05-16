@@ -30,12 +30,24 @@ header-includes:
 babel-lang: french
 ---
 
-# Introduction
+!include chapters/introduction.md
 
 # Architecture
 
-# Création et management des utilisateurs
+!include chapters/architecture-physique.md
 
-# Upload de fichiers
+!include chapters/architecture-logiciel.md
 
-# Partage de fichiers et albums
+!include chapters/cryptographie.md
+
+# Fonctionnalités de l'application
+
+!include chapters/users.md
+
+!include chapters/upload-fichier.md
+
+!include chapters/partage-fichier.md
+
+!include chapters/conclusion.md
+
+!include chapters/bib.md
