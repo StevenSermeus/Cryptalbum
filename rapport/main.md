@@ -1,6 +1,6 @@
 ---
-title: "Rapport séminaire"
-author: ["Sermeus Steven"]
+title: "Rapport"
+author: ["Sermeus Steven", "Frippiat Gabriel"]
 academicyear: 2023-2024
 category: MASI
 fontsize: 11pt
@@ -29,3 +29,13 @@ header-includes:
   - "\\makeatother"
 babel-lang: french
 ---
+
+# Introduction
+
+# Architecture
+
+# Création et management des utilisateurs
+
+# Upload de fichiers
+
+# Partage de fichiers et albums
