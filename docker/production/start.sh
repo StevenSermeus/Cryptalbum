@@ -4,6 +4,8 @@
 MKCERT_OK=0
 DOCKER_OK=0
 HOSTS=0
+HOSTS_DOCKER=0
+ENV_FILES=0
 # colors
 NC='\033[0m' # No Color
 # Regular Colors
@@ -91,8 +93,8 @@ echo """
     | This script require elevated privillège to update the /etc/hosts file.           |
     | Moreover, it need some dependies, so check it before continuing execution :      |
     | ${Purple}1. mkcert${NC} ${Green}(possible to install it with the script)${NC}                               |
-    | ${Purple}3. docker${NC}                                                                        |
-    | ${Purple}4. docker-compose${NC}                                                                |
+    | ${Purple}3. docker${NC} ${Green}(possible to install it with the script)${NC}                               |
+    | ${Purple}4. docker-compose${NC} ${Green}(possible to install it with the script)${NC}                       |
     |----------------------------------------------------------------------------------|
 """
 
@@ -123,7 +125,7 @@ fi
 
 # check if user want to install or stop the containers
 echo """
-    Do you want to start the production containers ? (y/n)
+    Do you want to start the production containers ? Press n if you want to stop the container ! (y/n)
 """
 
 read -r response
@@ -167,6 +169,20 @@ if [ "$response" = "y" ]; then
         """
         echo '127.0.0.1    vimsnap.local' | sudo tee -a /etc/hosts
         HOSTS=1
+    fi
+
+    # check if the "127.0.0.1    host.docker.internal" line is already in the /etc/hosts file
+    if grep -q "127.0.0.1    host.docker.internal" /etc/hosts;then
+        echo """
+            ${Green}The /etc/hosts file has already been updated.${NC}
+        """
+        HOSTS_DOCKER=1
+    else
+        echo """
+            Updating /etc/hosts file ...
+        """
+        echo '127.0.0.1    host.docker.internal' | sudo tee -a /etc/hosts
+        HOSTS_DOCKER=1
     fi
     
 else
@@ -222,13 +238,19 @@ if [ "$response" = "y" ]; then
                 cert.pem${NC}
             """
         fi
-    else # mkcert is installed
+    else
         echo """
-            Mkcert is already installd. 
-            Generate a self-signed certificate. Generating ...
+            mkcert is already installed. Generating the self-signed certificate ...
         """
+    fi
+    # recheck if mkcert is installed
+    if [ -x "$(command -v mkcert)" ]; then
+        echo """
+            Generating the self-signed certificate ...
+        """
+        mkdir -p conf/nginx/certificates
         mkcert -install
-        mkcert -key-file conf/nginx/certificates/key.pem -cert-file conf/nginx/certificates/cert.pem vimsnap.local vimsnap.local
+        mkcert -key-file conf/nginx/certificates/key.pem -cert-file conf/nginx/certificates/cert.pem vimsnap.local
         MKCERT_OK=1
     fi
 else # mkcert is not installed
@@ -251,43 +273,244 @@ fi
 
 # check if docker is installed
 if [ -x "$(command -v docker)" ]; then
-    
-    # check if the environment file exists
-    if [ ! -f .env ]; then
+    echo """
+        Docker is already installed. 
+    """
+else
+    echo """
+        Docker is not installed. This project depends on this technologie, would you like to install it ? (y/n)
+    """
+
+    read -r response
+
+    if [ "$response" = "n" ]; then
         echo """
-            ${Red}The .env file does not exist. 
-            Please create it regarding the exemple one before running this script.${NC}
+            ${Green}Please install docker and docker-compose manually before running this script.${NC}
         """
     else
-        # please update the docker compose command to use the correct one regarding the OS
-        echo """
-            Start the production containers. Starting ...
-        """
-        docker compose --env-file ./.env up -d --build
 
-        # generate API keys for minio
+        # install docker
         echo """
-            Generate API keys for minio. Generating ...
+            Installing docker ...
         """
-        docker exec minio sh /init_minio_keys.sh
-        DOCKER_OK=1
+        # check if the package manager is pacman
+        if [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu
+            sudo pacman -S docker
+            sudo usermod -aG docker $USER
+        # check if the package manager is apt
+        elif [ -x "$(command -v apt)" ]; then
+            # check if curl is installed
+            if ! [ -x "$(command -v curl)" ]; then
+                sudo apt-get update
+                sudo apt-get install -y curl
+
+            fi
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sh get-docker.sh
+            # Install newuidmap & newgidmap binaries
+            sudo apt-get install -y uidmap
+            # root-less mode
+            dockerd-rootless-setuptool.sh install
+        else
+            echo """
+                ${Red}Docker is not installed. 
+                This script take charge only debian and Archlinux based distro. 
+                Please install it manually.
+                Refer to the documentation :${NC} ${BCyan}https://docs.docker.com/engine/install/${NC} ${Red}to install it manually !${NC}
+            """
+        fi
+    fi
+    
+fi
+
+
+# check if docker-compose is installed
+if [ -x "$(command -v docker compose)" ]; then
+    echo """
+        Docker compose is already installed. 
+    """
+else
+
+    echo """
+        Docker compose is not installed. This project depends on this technologie, would you like to install it ? (y/n)
+    """
+
+    read -r response
+
+    if [ "$response" = "n" ]; then
+        echo """
+            ${Green}Please install docker-compose manually before running this script.${NC}
+        """
+    else
+
+        # install docker compose
+        echo """
+            Installing docker compose ...
+        """
+        # check if the package manager is pacman
+        if [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu
+            sudo pacman -S doker-compose
+        # check if the package manager is apt
+        elif [ -x "$(command -v apt)" ]; then
+            sudo apt-get install docker-compose-plugin
+        else
+            echo """
+                ${Red}Docker compose is not installed. 
+                This script take charge only debian and Archlinux based distro. 
+                Please install it manually.
+                Refer to the documentation :${NC} ${BCyan}https://docs.docker.com/compose/install/${NC} ${Red}to install it manually !${NC}
+            """
+        fi
+    fi
+fi
+
+# check if the .env file exists
+if [ ! -f .env ]; then
+    echo """
+        ${Purple}The .env file for docker does not exist.
+        The environment file will be creating from a template,
+        that will cause some errors. So please, stop the script with CTRL+C
+        and then create the .env file manually, and restart the script.${NC}
+    """
+
+    echo """
+        Would you like to create the .env file from the .env.example file ? (y/n)
+    """
+
+    read -r response
+
+    if [ "$response" = "n" ]; then
+        echo """
+            ${Green}Please create the .env file manually before running this script.${NC}
+        """
+        ENV_FILES=0
+    else
+        echo """
+            Creating the .env file from the .env.example file ...
+        """
+        cat .env.example > .env
+        ENV_FILES=1
+    fi
+    
+fi
+
+# check the .env file for the apps exists
+if [ ! -f ../../apps/web/.env ]; then
+    echo """
+        ${Purple}The .env file for the apps does not exist.
+        The environment file will be creating from a template,
+        that will cause some errors. So please, stop the script with CTRL+C
+        and then create the .env file manually, and restart the script.${NC}
+    """
+
+    echo """
+        Would you like to create the .env file from the .env.example file ? (y/n)
+    """
+
+    read -r response
+
+    if [ "$response" = "n" ]; then
+        echo """
+            ${Green}Please create the .env file manually before running this script.${NC}
+        """
+        ENV_FILES=0
+    else
+        echo """
+            Creating the .env file from the .env.example file ...
+        """
+        cat ../../apps/web/.env.example.production > ../../apps/web/.env
+        ENV_FILES=1
+    fi
+fi
+
+# check the .env file for the apps and docker are creating or exists
+if [ -f .env ] && [ -f ../../apps/web/.env ]; then
+    ENV_FILES=1
+fi
+
+# check if the installation docker has worked
+if [ -x "$(command -v docker)" ]; then
+    if [ -x "$(command -v docker compose)" ]; then
+
+        # check the ENV_FILES
+
+        if [ $ENV_FILES -eq 1 ]; then
+            echo """
+                Start the production containers. Starting ...
+            """
+            docker compose --env-file ./.env up -d --build
+
+            # generate API keys for minio
+            echo """
+                Generate API keys for minio. Generating ...
+            """
+            docker exec minio sh /init_minio_keys.sh
+            DOCKER_OK=1
+        else
+            echo """
+                ${Red}The .env file for the apps or docker does not exist.
+                Please create it manually before running this script.${NC}
+            """
+        fi
     fi
 else
     echo """
-        ${Red}Docker is not installed. 
-        Please install it before running this script.
-        """
-    echo """    
-        ${Green}Refer to the documentation :${NC} ${BGreen}https://docs.docker.com/get-docker/ ${NC}
-        ${Green}Be sure to have docker-compose installed too :${NC} ${BGreen}https://docs.docker.com/compose/install/ ${NC}
+        ${Red}Something went wrong, docker or docker compose is not installed. 
+        This script take charge only debian and Archlinux based distro. 
+        Please install it manually.
+        Refer to the documentation :${NC} ${BCyan}https://docs.docker.com/engine/install/${NC} ${Red}to install it manually !${NC}
     """
 fi
+
+# clean project
+echo """
+    Cleaning the project ...
+"""
+rm get-docker.sh
 
 # display the informations
 echo """
     Resume informations of installation :
     -------------------------------------
 """
+
+# check HOSTS
+if [ $HOSTS -eq 1 ]; then
+    echo """
+        HOSTS Rapport :
+        ---------------
+        ${Green}You can access the application at :${NC} ${BGreen}https://vimsnap.local:8443 ${NC}
+    """
+else
+    echo """
+        HOSTS Rapport :
+        ---------------
+        ${Red}The /etc/hosts file has not been updated.
+        Please update it manually to access the application correctly.
+        Add the following line :${NC} ${BRed}127.0.0.1    vimsnap.local${NC}
+    """
+fi
+
+# check HOSTS_DOCKER
+if [ $HOSTS_DOCKER -eq 1 ]; then
+    echo """
+        HOSTS_DOCKER Rapport :
+        ----------------------
+        ${Green}All required resolution host have been added in your /etc/hosts ${NC}
+    """
+else
+    echo """
+        HOSTS_DOCKER Rapport :
+        ----------------------
+        ${Red}The /etc/hosts file has not been updated for the docker internal host resolution.
+        Please update it manually to access the application correctly.
+        Add the following line :${NC} ${BRed}127.0.0.1    host.docker.internal${NC}
+    """
+fi
+
+# check MKCERT_OK
 if [ $MKCERT_OK -eq 1 ]; then
     echo """
         MKCERT Rapport :
@@ -307,6 +530,23 @@ else
     """
 fi
 
+# check ENV_FILES
+if [ $ENV_FILES -eq 1 ]; then
+    echo """
+        ENV_FILES Rapport :
+        ------------------
+        ${Green}The .env file for the apps and docker have been created or have been present.${NC}
+    """
+else
+    echo """
+        ENV_FILES Rapport :
+        ------------------
+        ${Red}The .env file for the apps and docker have not been created or havn't been present.
+        Please create it manually before running this script.${NC}
+    """
+fi
+
+# check DOCKER_OK
 if [ $DOCKER_OK -eq 1 ]; then
     echo """
         DOCKER Rapport :
@@ -319,23 +559,8 @@ else
         DOCKER Rapport :
         ----------------
         ${Red}The production containers have not been started.
-        Please install docker and docker-compose 
+        Please be sure that the .env file is created, 
+        be sure that docker and docker-compose are installed or you choosed to install it. 
         and start the containers by running this script again.${NC}
-    """
-fi
-
-if [ $HOSTS -eq 1 ]; then
-    echo """
-        HOSTS Rapport :
-        ---------------
-        ${Green}You can access the application at :${NC} ${BGreen}https://vimsnap.local:8443 ${NC}
-    """
-else
-    echo """
-        HOSTS Rapport :
-        ---------------
-        ${Red}The /etc/hosts file has not been updated.
-        Please update it manually to access the application correctly.
-        Add the following line :${NC} ${BRed}127.0.0.1    vimsnap.local${NC}
     """
 fi

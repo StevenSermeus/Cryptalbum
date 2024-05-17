@@ -13,7 +13,7 @@ This env file show an exemple for creating your `.env` file that you'll use to r
 # current workdir : docker/production
 touch .env
 cat .env.exemple >> .env
-# update the content
+# update the content (for this project no change needed)
 ```
 
 ## Second, generate key and certificat
@@ -44,6 +44,7 @@ docker exec minio sh /init_minio_keys.sh
 docker compose run push-db
 # add the following line in your /etc/hosts
 echo "127.0.0.1     vimsnap.local" | tee -a /etc/hosts
+echo "127.0.0.1     host.docker.internal" | tee -a /etc/hosts
 ```
 
 Now you can access to the [app](https://vimsnap:8443) : if you add the specifid line in your `/etc/hosts` file. Or, you can use this instead [alternative_link](https://127.0.0.1:8443) : localhost use.
@@ -68,9 +69,28 @@ It's possible to deploy the application rapidely thanks to the `start.sh` script
 3. docker-compose
 4. `.env` file created regarding the exemple one
 
+Except for the `.env` file, all other dependencies can be installed using this script.
+
 This script is complete and display more usefull informations about the deploying, so execute the script and refer to the information diplayed :
 
 ```bash
 # current workdir: docker/production
 sh start.sh
 ```
+
+Informations :
+
+The end of the script will generate a rapport for all process :
+
+1. generate certificat and key
+2. configure the /etc/hosts file
+3. installed docker if is necessary
+4. run the container
+5. generate the API key
+
+The corresponding color signify something :
+
+- Red : something went wrong (please refer to the information displayed)
+- Green : all went well or advice is showing
+
+During the script execution, it will use many environment file (one for the application under `apps/web` directory and one for the docker under `docker/production` folder). If this files are not present, it will generate them from the template one named `example`. It may cause some issues, so please create it by your own before running this script.
