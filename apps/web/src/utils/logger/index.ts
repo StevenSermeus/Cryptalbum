@@ -1,16 +1,16 @@
 import { Logger, LogType } from "logcm";
 import { ConsoleProvider, FileProvider } from "logcm/providers";
-// import SeqProvider from "./SeqProvider";
+import SeqProvider from "./SeqProvider";
 import { env } from "@/env";
 const logger = Logger.getLogger(
   [
-    // new SeqProvider("http://localhost:5341", [
-    //   LogType.INFO,
-    //   LogType.ERROR,
-    //   LogType.CRITICAL,
-    //   LogType.WARNING,
-    //   LogType.DEBUG,
-    // ]),
+    new SeqProvider("http://localhost:5341", [
+      LogType.INFO,
+      LogType.ERROR,
+      LogType.CRITICAL,
+      LogType.WARNING,
+      LogType.DEBUG,
+    ]),
     new ConsoleProvider(),
     new FileProvider({
       filePath: "/tmp",
