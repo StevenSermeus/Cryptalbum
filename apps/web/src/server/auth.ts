@@ -104,16 +104,22 @@ export const authOptions: NextAuthOptions = {
           },
         });
         logger.info(
-          `Logging attemps from deviceId ${challenge?.userDevice.id} with challengeId ${credentials.challengeId} and challenge ${credentials.challenge}`,
+          `Login attemp from deviceId ${challenge?.userDevice.id} with challengeId ${credentials.challengeId} and challenge ${credentials.challenge}`,
         );
         if (
           !challenge ||
           challenge.isValidated ||
           !(challenge.expires > new Date())
         ) {
+        logger.error(
+          `Login attemp from deviceId ${challenge?.userDevice.id} with an invalid or expired challenge ${credentials.challengeId}`,
+        );
           return null;
         }
         if (challenge.userDevice.user.email !== credentials.email) {
+        logger.error(
+          `Login attemp from deviceId ${challenge?.userDevice.id} with a email and challenge ${credentials.challengeId} mismatch`,
+        );
           return null;
         }
         await db.userDeviceChallenge.update({
