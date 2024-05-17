@@ -12,3 +12,4 @@ petit § sur chaque techno utilisée :
 § sur Postgres
 § sur Minio
 § sur Seq + Logcm (ggwp Steven)
+§ sur nginx
