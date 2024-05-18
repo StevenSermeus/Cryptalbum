@@ -3,6 +3,7 @@ import { createTRPCRouter } from "../trpc";
 import { rateLimitedMiddleware } from "../trpc";
 import { protectedProcedure } from "../trpc";
 import { z } from "zod";
+import logger from "@/utils/logger";
 
 export const deviceRouter = createTRPCRouter({
   listDevices: protectedProcedure
@@ -35,7 +36,9 @@ export const deviceRouter = createTRPCRouter({
     )
     .mutation(async ({ input: { deviceId, keys, albumsForDevice }, ctx }) => {
       try {
-        console.log("trustDevice", deviceId, keys);
+        logger.info(
+          `Trust device request for device ${deviceId} by user ${ctx.session.userId}`,
+        );
         await ctx.db.$transaction(async (t) => {
           const device = await t.userDevice.findFirst({
             where: { id: deviceId, userId: ctx.session.userId },
@@ -44,6 +47,9 @@ export const deviceRouter = createTRPCRouter({
             throw new TRPCError({ code: "BAD_REQUEST" });
           }
           if (device.isTrusted) {
+            logger.error(
+              `Trust device request for device ${deviceId} by user ${ctx.session.userId} already Trusted`,
+            );
             throw new TRPCError({ code: "BAD_REQUEST" });
           }
           const deviceKeys = await t.sharedPicture.findMany({
@@ -56,6 +62,9 @@ export const deviceRouter = createTRPCRouter({
           for (const key of keys) {
             if (!deviceKeysMap.has(key.id)) {
               console.log("key not found", key.id, deviceKeysMap);
+              logger.error(
+                `Trust device request for device ${deviceId} by user ${ctx.session.userId} key ${key.id} not found`,
+              );
               throw new TRPCError({ code: "BAD_REQUEST" });
             }
             console.log("key found", key.id, deviceKeysMap);
@@ -85,6 +94,9 @@ export const deviceRouter = createTRPCRouter({
           for (const album of albumsForDevice) {
             if (!deviceAlbumsMap.has(album.albumId)) {
               console.log("album not found", album.albumId, deviceAlbumsMap);
+              logger.error(
+                `Trust device request for device ${deviceId} by user ${ctx.session.userId} album ${album.albumId} not found`,
+              );
               throw new TRPCError({ code: "BAD_REQUEST" });
             }
             await t.sharedAlbum.create({
@@ -107,6 +119,9 @@ export const deviceRouter = createTRPCRouter({
             where: { id: deviceId },
             data: { isTrusted: true },
           });
+          logger.info(
+            `Trust device request for device ${deviceId} by user ${ctx.session.userId} SUCCESS`,
+          );
         });
       } catch (e) {
         console.log(e);
@@ -121,13 +136,22 @@ export const deviceRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input: { deviceId }, ctx }) => {
+      logger.info(
+        `Revoking Trust Device request for device ${deviceId} by user ${ctx.session.userId}`,
+      );
       const device = await ctx.db.userDevice.findFirst({
         where: { id: deviceId, userId: ctx.session.userId },
       });
       if (!device) {
+        logger.error(
+          `Revoking Trust Device request for device ${deviceId} by user ${ctx.session.userId} DEVICE NOT FOUND`,
+        );
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
       if (!device.isTrusted) {
+        logger.error(
+          `Revoking Trust Device request for device ${deviceId} by user ${ctx.session.userId} DEVICE ALREADY NOT TRUSTED`,
+        );
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
       await ctx.db.$transaction(async (t) => {
@@ -141,6 +165,9 @@ export const deviceRouter = createTRPCRouter({
         await t.sharedAlbum.deleteMany({
           where: { deviceId: deviceId },
         });
+        logger.info(
+          `Revoking Trust Device request for device ${deviceId} by user ${ctx.session.userId} SUCCESS`,
+        );
       });
     }),
 });
