@@ -128,12 +128,14 @@ export const userRouter = createTRPCRouter({
         },
       });
       if (pictures.length !== input.pictures.length) {
+        logger.error(`Updating keys for user ${ctx.session.userId} pictures mismatch`);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Some pictures were not found",
         });
       }
       if (albums.length !== input.albums.length) {
+        logger.error(`Updating keys for user ${ctx.session.userId} album mismatch`);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Some albums were not found",
@@ -182,6 +184,7 @@ export const userRouter = createTRPCRouter({
             },
           });
         }
+        logger.info(`Updating keys for user ${ctx.session.userId} SUCCESS`);
       });
     }),
   updateEmail: protectedProcedure
