@@ -393,11 +393,10 @@ if [ ! -f .env ]; then
         cat .env.example > .env
         ENV_FILES=1
     fi
-    
 fi
 
-# check the .env file for the apps exists
-if [ ! -f ../../apps/web/.env ]; then
+# check if the .env file exists on the apps/web folder
+if [ ! -f apps/web/.env ]; then
     echo """
         ${Purple}The .env file for the apps does not exist.
         The environment file will be creating from a template,
@@ -423,11 +422,6 @@ if [ ! -f ../../apps/web/.env ]; then
         cat ../../apps/web/.env.example.production > ../../apps/web/.env
         ENV_FILES=1
     fi
-fi
-
-# check the .env file for the apps and docker are creating or exists
-if [ -f .env ] && [ -f ../../apps/web/.env ]; then
-    ENV_FILES=1
 fi
 
 # check if the installation docker has worked

@@ -2,18 +2,29 @@
 
 Here, you can obtain more informations for container docker in production environment as build, run and execute all command.
 
-## First, the .env.exemple
+We'll present a manual methode where you can perform all command manually, but we strongly recommand to use the script `start.sh` in `docker/production` directory.
 
-This env file show an exemple for creating your `.env` file that you'll use to run container later. So, create a new file named `.env`, copy the content of `.env.exemple` to the new env file and update the content depending on your deploiement.
+## First, the .env files
+
+This env file show an exemple for creating your `.env` file that you'll use to run container later. So, create a new file named `.env`, copy the content of `.env.example` to the new env file and update the content depending on your deploiement.
 
 **Commands** :
 
 ```bash
 # on linux
 # current workdir : docker/production
-touch .env
-cat .env.exemple >> .env
+cat .env.example > .env
 # update the content (for this project no change needed)
+```
+
+There is another .env file needed under `apps/web/` directory you can aslo copy the `.env.example.production` file into `.env` file.
+
+**Commands** :
+
+```bash
+# on linux
+# current workdir : apps/web
+cat .env.example.production > .env
 ```
 
 ## Second, generate key and certificat
@@ -69,14 +80,7 @@ It's possible to deploy the application rapidely thanks to the `start.sh` script
 3. docker-compose
 4. `.env` file created regarding the exemple one
 
-Except for the `.env` file, all other dependencies can be installed using this script.
-
-This script is complete and display more usefull informations about the deploying, so execute the script and refer to the information diplayed :
-
-```bash
-# current workdir: docker/production
-sh start.sh
-```
+This script is complete and display more usefull informations about the deploying, so execute the script and refer to the information diplayed !
 
 Informations :
 
@@ -93,4 +97,13 @@ The corresponding color signify something :
 - Red : something went wrong (please refer to the information displayed)
 - Green : all went well or advice is showing
 
-During the script execution, it will use many environment file (one for the application under `apps/web` directory and one for the docker under `docker/production` folder). If this files are not present, it will generate them from the template one named `example`. It may cause some issues, so please create it by your own before running this script.
+During the script execution, it will use many environment file (one for the application under `apps/web` directory and one for the docker under `docker/production` folder). If this files are not present, it will generate them from the template one named `example` or `example.production`. It may cause some issues if you change something in the `docker-compose` file, so please create it by your own before changing something in the deployement.
+
+But if you start for the first time, you should change anything, just run `start.sh`.
+
+**Command** :
+
+```bash
+# current workdir: docker/production
+sh start.sh
+```
