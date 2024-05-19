@@ -33,9 +33,10 @@ services:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "nginx-proxy"
     networks:
-      app_network:
+      default:
         aliases:
           - vimsnap.local
+    network_mode: host
 
   app:
     platform: "linux/amd64"
@@ -87,10 +88,6 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "app"
-    networks:
-      app_network:
-        aliases:
-          - app
 
   minio:
     image: quay.io/minio/minio
@@ -119,10 +116,6 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "minio"
-    networks: 
-      app_network:
-        aliases:
-          - minio
 
   postgres:
     image: postgres:16
@@ -147,10 +140,6 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "postgres"
-    networks:
-      app_network:
-        aliases:
-          - postgres
 
   #To add password to valkey, you need to mount the config file to the container
   #Valkey is the real open source version of redis ^^
@@ -177,11 +166,7 @@ services:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "valkey"
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
-    networks:
-      app_network:
-        aliases:
-          - valkey
-
+    
   seq:
     build:
       context: .
@@ -201,10 +186,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    networks:
-      app_network:
-        aliases:
-          - seq
 
   seqgelf:
     build:
@@ -223,10 +204,6 @@ services:
     depends_on:
       seq:
         condition: service_healthy
-    networks:
-      app_network:
-        aliases:
-          - seqgelf
 
 configs:
   valkey:
@@ -235,7 +212,3 @@ configs:
     file: ./conf/nginx/nginx.conf
   certs:
     file: ./conf/nginx/certificates
-
-networks:
-  app_network:
-    driver: bridge
