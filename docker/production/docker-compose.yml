@@ -11,10 +11,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      app_network:
-        aliases:
-          - push-db
 
   reverse-proxy:
     image: nginx:latest
