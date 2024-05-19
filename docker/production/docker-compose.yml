@@ -2,30 +2,30 @@ services:
   push-db:
     build:
       context: ../../
-      dockerfile: docker/production/push-db.dockerfile
-    image: push-db-img
+      dockerfile: docker/production/Dockerfile.pushDB
     container_name: push-db
     env_file: .env
     environment:
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/database" # change this with the name of container in production
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/database"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   reverse-proxy:
-    build:
-      context: .
-      dockerfile: ./nginx.dockerfile
-    image: reverse-proxy-img
-    restart: always
+    image: nginx:latest
     container_name: proxy
     env_file: .env
-    volumes:
-      - ./conf/nginx/certificates:/etc/nginx/certs
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
+      - source: certs
+        target: /etc/nginx/certs
     ports:
       - ${PROXY_HTTP_PORT}:80
       - ${PROXY_HTTPS_PORT}:443
     links:
       - app
+    restart: always
     logging:
       driver: "gelf"
       options:
@@ -66,7 +66,6 @@ services:
       MINIO_ROOT_PASSWORD: "password" # change this with the root password of the minio service
       SEQ_URL: "http://seq:5341"
     working_dir: /app
-    image: vimsnap-img
     env_file: .env
     container_name: vimsnap
     # extra_hosts:
@@ -78,11 +77,14 @@ services:
       retries: 10
       start_period: 1s
     depends_on:
-      - minio
-      - postgres
-      - valkey
-      - seqgelf
-      - seq
+      valkey:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      seq:
+        condition: service_healthy
     logging:
       driver: "gelf"
       options:
@@ -103,6 +105,11 @@ services:
     volumes:
       - ./minio_data:/data
       - ./conf/minio/init_minio_keys.sh:/init_minio_keys.sh
+    healthcheck:
+      test: ["CMD-SHELL", "mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} && mc admin info myminio"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
@@ -122,6 +129,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
@@ -136,9 +148,16 @@ services:
   valkey:
     image: valkey/valkey:7.2
     container_name: valkey
+    configs:
+      - source: valkey
+        target: /usr/local/etc/valkey/valkey.conf
     volumes:
       - ./valkey_data:/data
-      - ./conf/valkey/valkey.conf:/usr/local/etc/valkey/valkey.conf
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${VALKEY_PASSWORD} ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
@@ -152,7 +171,9 @@ services:
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
 
   seq:
-    image: datalust/seq:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.seq
     container_name: seq
     hostname: seq
     ports:
@@ -163,13 +184,34 @@ services:
       SEQ_FIRSTRUN_ADMINPASSWORDHASH: QBzUAa8NQZMbr/LzYR2fyAzCxCX1EHfNUjopbU5Is3yGd/am3+4hEH77NtM5pj8VTPw+ZPxEwY8r5bIDpKnVvrfW0iHk+jqmaUu8AhMZultA
     volumes:
       - ./seq_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   seqgelf:
-    image: datalust/seq-input-gelf:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.seqgelf
     container_name: seqgelf
     environment:
       SEQ_ADDRESS: "http://seq:5341"
     ports:
       - "12201:12201/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://seq:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
-      - seq
+      seq:
+        condition: service_healthy
+
+configs:
+  valkey:
+    file: ./conf/valkey/valkey.conf
+  nginx:
+    file: ./conf/nginx/nginx.conf
+  certs:
+    file: ./conf/nginx/certificates

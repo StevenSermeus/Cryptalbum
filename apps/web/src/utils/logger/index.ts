@@ -3,7 +3,7 @@ import { ConsoleProvider, FileProvider } from "logcm/providers";
 import SeqProvider from "./SeqProvider";
 import { env } from "@/env";
 
-const seqUrl = process.env.SEQ_URL || "http://localhost:8081";
+const seqUrl = process.env.SEQ_URL || "http://localhost:5341";
 const logger = Logger.getLogger(
   [
     new SeqProvider(seqUrl, [
