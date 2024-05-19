@@ -6,7 +6,7 @@ services:
     container_name: push-db
     env_file: .env
     environment:
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/database"
+      DATABASE_URL: ${DATABASE_URL:?err}
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,32 +44,30 @@ services:
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
     environment:
-      REDIS_URL: "localhost"
-      REDIS_PASSWORD: "password"
-      VALKEY_URL: "valkey" # change to vlakey in production environment
-      VALKEY_PASSWORD: "AKQKSLDLK35SD313qSD61Q1S"
-      RATE_LIMIT_WINDOW: "60"
-      RATE_LIMIT_MAX: "100"
-      HMAC_SECRET: "secret"
-      NEXTAUTH_URL: "https://vimsnap.local:8443"
-      NEXTAUTH_SECRET: "secret"
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/database" # change this with the name of container in production
-      MINIO_ACCESS_KEY: "Sxmop8h_O4GD9ptJN2E" # change this with the access key of the minio service
-      MINIO_SECRET_KEY: "BO_JOsSBePhEUjXe0JbImQncyMxK_tMl_Ld6GrGT" # change this with the secret key of the minio service
-      MINIO_USE_SSL: "false"
-      MINIO_PORT: "9000"
-      MINIO_ENDPOINT: "minio" # change this with the name of container in production
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "postgres"
-      MINIO_ROOT_USER: "root" # change this with the root user of the minio service
-      MINIO_ROOT_PASSWORD: "password" # change this with the root password of the minio service
-      SEQ_URL: "http://seq:5341"
+      REDIS_URL: ${REDIS_URL:?err}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?err}
+      VALKEY_URL: ${VALKEY_URL:?err}
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?err}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:?err}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:?err}
+      HMAC_SECRET: ${HMAC_SECRET:?err}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?err}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?err}
+      DATABASE_URL: ${DATABASE_URL:?err}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?err}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?err}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:?err}
+      MINIO_PORT: ${MINIO_PORT:?err}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:?err}
+      POSTGRES_USER: ${POSTGRES_USER:?err}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?err}
+      POSTGRES_DB: ${POSTGRES_DB:?err}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?err}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?err}
+      SEQ_URL: ${SEQ_URL:?err}
     working_dir: /app
     env_file: .env
     container_name: vimsnap
-    # extra_hosts:
-    #   - "t3.local:reverse-proxy"
     healthcheck:
       test: ["CMD-SHELL", "wget --spider --quiet --tries=1 --timeout=10 http://vimsnap:3000 || exit 1"]
       interval: 1s
@@ -130,7 +128,7 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_PASSWORD}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -167,7 +165,6 @@ services:
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "valkey"
-    # change config file used by valkey
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
 
   seq:
@@ -181,7 +178,7 @@ services:
       - "8081:80"
     environment:
       ACCEPT_EULA: Y
-      SEQ_FIRSTRUN_ADMINPASSWORDHASH: QBzUAa8NQZMbr/LzYR2fyAzCxCX1EHfNUjopbU5Is3yGd/am3+4hEH77NtM5pj8VTPw+ZPxEwY8r5bIDpKnVvrfW0iHk+jqmaUu8AhMZultA
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: ${SEQ_FIRSTRUN_ADMINPASSWORDHASH:?err}
     volumes:
       - ./seq_data:/data
     healthcheck:
@@ -196,7 +193,7 @@ services:
       dockerfile: Dockerfile.seqgelf
     container_name: seqgelf
     environment:
-      SEQ_ADDRESS: "http://seq:5341"
+      SEQ_ADDRESS: ${SEQ_URL:?err}
     ports:
       - "12201:12201/udp"
     healthcheck:
