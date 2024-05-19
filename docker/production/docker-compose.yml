@@ -1,28 +1,31 @@
-version: "3.9"
 services:
   push-db:
     build:
       context: ../../
-      dockerfile: docker/production/push-db.dockerfile
-    image: push-db-img
+      dockerfile: docker/production/Dockerfile.pushDB
     container_name: push-db
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?err}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   reverse-proxy:
-    build:
-      context: .
-      dockerfile: ./nginx.dockerfile
-    image: reverse-proxy-img
-    restart: always
-    container_name: reverse-proxy
-    volumes:
-      - ./conf/nginx/certificates:/etc/nginx/certs
+    image: nginx:latest
+    container_name: proxy
+    env_file: .env
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
+      - source: certs
+        target: /etc/nginx/certs
     ports:
       - ${PROXY_HTTP_PORT}:80
       - ${PROXY_HTTPS_PORT}:443
     links:
       - app
+    restart: always
     logging:
       driver: "gelf"
       options:
@@ -40,15 +43,44 @@ services:
       dockerfile: ./Dockerfile
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
+    environment:
+      VALKEY_URL: ${VALKEY_URL:?err}
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?err}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:?err}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:?err}
+      HMAC_SECRET: ${HMAC_SECRET:?err}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?err}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?err}
+      DATABASE_URL: ${DATABASE_URL:?err}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?err}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?err}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:?err}
+      MINIO_PORT: ${MINIO_PORT:?err}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:?err}
+      POSTGRES_USER: ${POSTGRES_USER:?err}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?err}
+      POSTGRES_DB: ${POSTGRES_DB:?err}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?err}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?err}
+      SEQ_URL: ${SEQ_URL:?err}
     working_dir: /app
-    image: vimsnap-img
+    env_file: .env
     container_name: vimsnap
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet --tries=1 --timeout=10 http://vimsnap:3000 || exit 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
     depends_on:
-      - minio
-      - postgres
-      - valkey
-      - seqgelf
-      - seq
+      valkey:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      seq:
+        condition: service_healthy
     logging:
       driver: "gelf"
       options:
@@ -59,6 +91,8 @@ services:
     image: quay.io/minio/minio
     container_name: minio
     command: server /data --console-address ":9001"
+    # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
+    env_file: .env
     ports:
       - ${MINIO_PORT}:9001
     environment:
@@ -67,6 +101,11 @@ services:
     volumes:
       - ./minio_data:/data
       - ./conf/minio/init_minio_keys.sh:/init_minio_keys.sh
+    healthcheck:
+      test: ["CMD-SHELL", "mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} && mc admin info myminio"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
@@ -79,12 +118,18 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres
+    env_file: .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
@@ -99,37 +144,69 @@ services:
   valkey:
     image: valkey/valkey:7.2
     container_name: valkey
+    configs:
+      - source: valkey
+        target: /usr/local/etc/valkey/valkey.conf
     volumes:
       - ./valkey_data:/data
-      - ./conf/valkey/valkey.conf:/usr/local/etc/valkey/valkey.conf
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${VALKEY_PASSWORD} ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seqgelf:
         condition: service_started
+    env_file: .env
     logging:
       driver: "gelf"
       options:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "valkey"
-    # change config file used by valkey
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
+
   seq:
-    image: datalust/seq:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.seq
     container_name: seq
+    hostname: seq
     ports:
-      - ${SEQ_PORT}:5341
-      - ${SEQ_LOG_PORT}:80
+      - "5341:5341"
+      - "8081:80"
     environment:
       ACCEPT_EULA: Y
-      SEQ_FIRSTRUN_ADMINPASSWORDHASH: ${SEQ_FIRSTRUN_ADMINPASSWORDHASH}
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: ${SEQ_FIRSTRUN_ADMINPASSWORDHASH:?err}
     volumes:
       - ./seq_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   seqgelf:
-    image: datalust/seq-input-gelf
-    container_name: seq_forwarder
+    build:
+      context: .
+      dockerfile: Dockerfile.seqgelf
+    container_name: seqgelf
     environment:
-      SEQ_ADDRESS: "http://seq:5341"
+      SEQ_ADDRESS: ${SEQ_URL:?err}
     ports:
-      - ${SEQGELF_PORT}:${SEQGELF_PORT}/udp
+      - "12201:12201/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://seq:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       seq:
-        condition: service_started
+        condition: service_healthy
+
+configs:
+  valkey:
+    file: ./conf/valkey/valkey.conf
+  nginx:
+    file: ./conf/nginx/nginx.conf
+  certs:
+    file: ./conf/nginx/certificates
