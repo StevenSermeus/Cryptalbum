@@ -44,8 +44,6 @@ services:
       args:
         NEXT_PUBLIC_CLIENTVAR: "clientvar"
     environment:
-      REDIS_URL: ${REDIS_URL:?err}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:?err}
       VALKEY_URL: ${VALKEY_URL:?err}
       VALKEY_PASSWORD: ${VALKEY_PASSWORD:?err}
       RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:?err}
