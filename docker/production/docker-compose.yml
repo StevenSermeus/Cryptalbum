@@ -43,8 +43,6 @@ services:
     working_dir: /app
     image: vimsnap-img
     container_name: vimsnap
-    # extra_hosts:
-    #   - "t3.local:reverse-proxy"
     depends_on:
       - minio
       - postgres
@@ -61,7 +59,6 @@ services:
     image: quay.io/minio/minio
     container_name: minio
     command: server /data --console-address ":9001"
-    # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
     ports:
       - ${MINIO_PORT}:9001
     environment:

@@ -37,8 +37,15 @@ pnpm run dev
 
 ## In production environment
 
-For this part, don't forget to create a `.env` file fro the docker container in the root directory of production docker regarding the environment file example bellow : [env-file-example](docker/production/.env.example)
+For this part, don't forget to create a `.env` file for the docker container in the root directory of production docker regarding the environment file example bellow : [env-file-example](docker/production/.env.example)
 
 For this part, don't forget to create a `.env` file in the root apps directory regarding the environment file example bellow : [env-file-example](apps/web/.env.example.production)
 
 In production envrionment, you should to refer to the [README.md](docker/production/README.md) file in docker/production folder !
+
+If you just want to start the project and begin with the default config working, just run the following command :
+
+```bash
+cd docker/production
+sh start.sh # ./start.sh works too
+```

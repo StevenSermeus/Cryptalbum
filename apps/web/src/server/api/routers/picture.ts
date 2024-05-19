@@ -271,18 +271,18 @@ export const pictureRouter = createTRPCRouter({
           `Adding the picture ${input.pictureId} to album ${input.albumId} by ${ctx.session.userId}`,
         );
         const picture = await ctx.db.picture.findUnique({
-          where: { 
+          where: {
             id: input.pictureId,
-            userId: ctx.session.userId
-        },
+            userId: ctx.session.userId,
+          },
           select: { userId: true },
         });
 
         const album = await ctx.db.album.findUnique({
-          where: { 
-          id: input.albumId,
-          userId: ctx.session.userId
-        },
+          where: {
+            id: input.albumId,
+            userId: ctx.session.userId,
+          },
           select: { userId: true },
         });
 

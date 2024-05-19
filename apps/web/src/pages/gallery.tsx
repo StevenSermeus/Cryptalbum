@@ -348,24 +348,28 @@ export default function Dashboard() {
                         <Button variant="outline">Add in album</Button>
                       </PopoverTrigger>
                       <PopoverContent className="flex flex-col gap-1">
-                        {albums.filter(e => e.userId === session.data?.user.userId).map((album) => {
-                          if (!picture.idsAlbum.includes(album.sharedAlbumId)) {
-                            return (
-                              <Button
-                                key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
-                                onClick={() =>
-                                  addPictureToAlbum(
-                                    picture.idPicture,
-                                    album.sharedAlbumId,
-                                  )
-                                }
-                              >
-                                {album.albumName}
-                              </Button>
-                            );
-                          }
-                          return null; // Ensure that nothing is rendered if condition fails
-                        })}
+                        {albums
+                          .filter((e) => e.userId === session.data?.user.userId)
+                          .map((album) => {
+                            if (
+                              !picture.idsAlbum.includes(album.sharedAlbumId)
+                            ) {
+                              return (
+                                <Button
+                                  key={`${picture.idPicture}-${album.sharedAlbumId}`} // Unique key for each button
+                                  onClick={() =>
+                                    addPictureToAlbum(
+                                      picture.idPicture,
+                                      album.sharedAlbumId,
+                                    )
+                                  }
+                                >
+                                  {album.albumName}
+                                </Button>
+                              );
+                            }
+                            return null; // Ensure that nothing is rendered if condition fails
+                          })}
                       </PopoverContent>
                     </Popover>
                     <SharePictureButton
