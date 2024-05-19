@@ -1,0 +1,6 @@
+FROM datalust/seq:latest
+
+RUN apt update && apt install -y curl
+
+EXPOSE 5341
+EXPOSE 80
