@@ -17,3 +17,7 @@ Un méchanisme similaire est utilisé pour le partage de clé de chiffrement sym
 ## Cryptographie symétrique
 
 Nous avons choisi d'utilisé AES-GCM, un algorithme de chiffrement symétrique qui permet de chiffrer et d'authentifier les données. Tout comme pour la cryptographie asymétrique, nous avons utilisé la librairie standard de Javascript, `crypto`, pour chiffrer et déchiffrer les données.
+
+# Hmac
+
+Pour assurer que les logs n'ont pas été modifiés, nous avons utilisé un HMAC. Celui-ci est généré à partir du contenu du log et d'une clé secrète stockée sur le serveur. Le HMAC est stocké dans le log. Si le message est modifié, le HMAC ne correspondra plus au contenu du log et nous pourrons détecter la modification.
