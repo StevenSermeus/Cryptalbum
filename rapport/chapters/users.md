@@ -10,8 +10,6 @@ Next-Auth
 
 Account, Session, USer, Verification toker --> Vient via NextAuth
 
-
-
 ### Management des devices
 
 § sur le fonctionnement d'un user avec plusieurs devices
