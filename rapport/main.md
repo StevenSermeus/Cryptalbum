@@ -36,8 +36,6 @@ babel-lang: french
 
 !include chapters/architecture-physique.md
 
-!include chapters/architecture-logiciel.md
-
 !include chapters/cryptographie.md
 
 # Fonctionnalités de l'application
