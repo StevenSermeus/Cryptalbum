@@ -17,5 +17,4 @@ Comme le montre le diagramme ci-dessus, l'utilisateur avec qui la photo est part
 
 Concernant le partage d'un album, il s'agit du même mécanisme que celui décris précédemment concernant le partage d'une photo. Il y a cependant le nom de l'album qui lui aussi est chiffré via la clé publique du device de l'utilisateur. Pour cela, il y a d'abord une requête au serveur pour récupérer les clés publique de l'utilisateur afin de chiffrer le nom de l'album et ensuite une requête afin de récupérer les clés publique de l'utilisateur avec qui on souhaite partager l'album. Comme expliqué précédemment, chacune des clés symétrique va alors être chiffrée par les clés publiques existantes.
 
-
 Comme expliqué précédemment, l'utilisateur avec qui l'album est partagé va pouvoir déchiffrer le nom de l'album via sa clé privée.

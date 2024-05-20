@@ -4,17 +4,17 @@ Comme cité plus haut dans le rapport, nous avons utilisé un système de rate l
 
 ```ts
 export const rateLimitedMiddleware = t.middleware(
-	async ({ path, ctx, next }) => {
-		const res = await ctx.cache.incr(`${path}:${ctx.ip}`);
-		if (res === 1) {
-			await ctx.cache.expire(`${path}:${ctx.ip}`, env.RATE_LIMIT_WINDOW);
-		}
-		if (res > env.RATE_LIMIT_MAX) {
-			logger.error(`Rate limit exceeded for ${ctx.ip} on ${path}`);
-			throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
-		}
-		return next();
-	}
+  async ({ path, ctx, next }) => {
+    const res = await ctx.cache.incr(`${path}:${ctx.ip}`);
+    if (res === 1) {
+      await ctx.cache.expire(`${path}:${ctx.ip}`, env.RATE_LIMIT_WINDOW);
+    }
+    if (res > env.RATE_LIMIT_MAX) {
+      logger.error(`Rate limit exceeded for ${ctx.ip} on ${path}`);
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+    }
+    return next();
+  },
 );
 ```
 

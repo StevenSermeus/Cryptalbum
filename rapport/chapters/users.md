@@ -1,24 +1,23 @@
-## Création et management des utilisateurs
-
-petit diagramme de séquences (avec la gestion des key)
-
 ### Authentification
+
+![Authentification](../assets/authentification.png "Authentification")
+
+Comme le montre le diagramme ci-dessus, lorsqu'un utilisateur souhaite s'authentifier, il va envoyer au serveur la clé publique du device depuis lequel il essaye de se connecter. Lorsque le serveur reçoit cette clé publique, il vérifie d'abord si elle existe et va alors renvoyer à l'utilisateur un challenge si cette clé publique existe bien dans la base de données. Ce challenge est alors uniquement déchiffrable avec la clé privée correspondante. Une fois le challenge déchiffré au serveur, le serveur vérifie bien si le challenge est correcte ou non. Si le challenge est correct, alors l'utilisateur peut se connecter et reçoit un JWT (Jason Web Token). Dans le cas contraire, l'utilisateur ne peut se connecter.
 
 Algo
 
-Next-Auth
+Next-Auth --> Steven, need d'ajouter des choses ?
 
 Account, Session, USer, Verification toker --> Vient via NextAuth
 
 ### Management des devices
 
-§ sur le fonctionnement d'un user avec plusieurs devices
+L'application permet à chaque utilisateur d'ajouter autant de devices qu'il le souhaite. Quand un utilisateur ajoute un device, une paire de clé publique-privée est générée pour ce device. Cela se produit tout d'abord lorsque l'utilisateur va créer son compte pour la première fois, une paire de clé publique-privée est alors créé pour ce device. Ensuite, une fois connecté sur son device, l'utilisateur va avoir la possibilité d'ajouter des devices. Une fois la paire de clé générée, l'utilisateur va devoir valider le device qu'il vient d'ajouter via un device de confiance. C'est à dire un device déjà "Trust" (de confiance) par l'utilisateur.
 
-Quand un user ajoute un device, on génère une paire de clé pour ce device
-L'utilisateur doit se co à un device déjà trust et dire qu'on trust le device ajouté
+Par exemple, si un utilisateur souhaite ajouter un 2e device, il va devoir, sur son 1er device, cliquer sur le bouton "Trust" afin d'affirmer qu'il a confiance en ce device. Une fois cela fait, il va pouvoir se connecter à ce 2e device. 
 
-On appele la méthode addDevice. L'user doit alz dans un device trust et cliquer sur le bouton pour trust le nouvel device. A ce moment on chiffre toutes les photos et album avec la clé publique de ce device.
+Une fois qu'un device est "Trust", il faut alors que l'utilisateur puisse avoir accès à ses photos sur ce nouveau device. Pour cela, chaque clé symétrique pour chaque photo va être chiffrée avec la clé publique de ce nouveau device. Pour les noms d'album, ils seront directement chiffrés avec la clé publique du device.
 
-Quand on untrust le device, alors le device n'a plus accès aux photo, via le "isTrusted" dans la table Device
+Dans le cas où un utilisateur decide de ne plus "Trust" un device car il l'a perdu où il n'y a plus accès, alors on ne peut ni avoir accès à ce device, ni aux photos et albums accessible précédement via ce device.
 
-Demander à Steven a quel moment on check quand le device est Trust --> C'est la première chose, première requête on check si le device est trust (Dans le fichier trpc.ts, voir protectedProcedure). Donc en gros chaque procédure son des protectedProcedure sauf login et connexion
+Lors de chaque requête vers le serveur, on vérifie d'abord si le device en question est "Trust" (de confiance). Dans notre code, chaque procédure est une "protectedProcedure" qui s'assure que le device qui est en train d'effectuer une requête est "Trust". Il existe des exceptions concernant le login et la connexion, sinon il serait impossible d'accéder à l'application. 
