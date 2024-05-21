@@ -48,7 +48,6 @@ function Profile() {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     if (data.email && data.changeKey) {
-      console.log("update both");
       updateCryptoKeys(data.email);
     }
     if (data.email && !data.changeKey) {

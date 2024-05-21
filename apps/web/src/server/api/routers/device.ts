@@ -61,13 +61,11 @@ export const deviceRouter = createTRPCRouter({
           );
           for (const key of keys) {
             if (!deviceKeysMap.has(key.id)) {
-              console.log("key not found", key.id, deviceKeysMap);
               logger.error(
                 `Trust device request for device ${deviceId} by user ${ctx.session.userId} key ${key.id} not found`,
               );
               throw new TRPCError({ code: "BAD_REQUEST" });
             }
-            console.log("key found", key.id, deviceKeysMap);
             await t.sharedPicture.create({
               data: {
                 user_device: {
@@ -93,7 +91,6 @@ export const deviceRouter = createTRPCRouter({
           );
           for (const album of albumsForDevice) {
             if (!deviceAlbumsMap.has(album.albumId)) {
-              console.log("album not found", album.albumId, deviceAlbumsMap);
               logger.error(
                 `Trust device request for device ${deviceId} by user ${ctx.session.userId} album ${album.albumId} not found`,
               );
