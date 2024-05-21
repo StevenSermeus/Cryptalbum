@@ -1,3 +1,7 @@
+Identifiants Henallux : 
+- Steven Sermeus : etu44050
+- Gabriel Frippiat : etu55347
+
 # How to run
 
 ## Via script (highly recommended)
