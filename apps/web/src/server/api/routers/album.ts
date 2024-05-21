@@ -91,8 +91,8 @@ export const albumRouter = createTRPCRouter({
           !album
             ? logger.warn(`Album ${input.albumId} not found to share`)
             : logger.warn(
-                `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
-              );
+              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+            );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
@@ -107,6 +107,21 @@ export const albumRouter = createTRPCRouter({
             },
           },
         });
+        const alreadyShared = await ctx.db.sharedAlbum.findMany({
+          where: {
+            albumId: input.albumId,
+            deviceId: {
+              in: deviceIds,
+            },
+          },
+        });
+        if (alreadyShared.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "User already has access to the album.",
+          });
+        }
         if (devices.length !== deviceIds.length) {
           const foundIds = new Set(devices.map((d) => d.id));
           const missingIds = deviceIds.filter((id) => !foundIds.has(id));
@@ -144,7 +159,7 @@ export const albumRouter = createTRPCRouter({
         });
       } catch (e) {
         logger.error(
-          `Failed to create album for user ${ctx.session.userId} with error: ${e}`,
+          `Failed to share album for user ${ctx.session.userId} with error: ${e}`,
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -211,8 +226,8 @@ export const albumRouter = createTRPCRouter({
         !album
           ? logger.warn(`Album ${input.albumId} not found`)
           : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
-            );
+            `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+          );
         throw new TRPCError({
           code: "FORBIDDEN",
           message:

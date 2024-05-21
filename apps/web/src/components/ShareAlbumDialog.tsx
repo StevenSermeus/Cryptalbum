@@ -104,6 +104,11 @@ export default function ShareAlbumDialog({
         sharedAlbumWithDevice: sharedAlbum,
         sharedPictures: sharedPictures,
       });
+      form.reset();
+      toast({
+        title: "Album shared",
+        action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+      });
     } catch (e) {
       console.error(e);
       e instanceof TRPCClientError ? e.message : "The server trolled us";

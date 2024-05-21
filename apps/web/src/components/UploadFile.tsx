@@ -28,6 +28,7 @@ import FileSkeleton from "./FileSkeleton";
 import { useToast } from "./ui/use-toast";
 import { ToastAction } from "./ui/toast";
 import { useSession } from "next-auth/react";
+import { TRPCClientError } from "@trpc/client";
 
 const formSchema = z.object({
   file: fileSchemaFront,
@@ -121,9 +122,10 @@ export default function FileUploadForm() {
       });
     } catch (e) {
       console.error(e);
+      e instanceof TRPCClientError? e.message : "The server trolled us";
       toast({
         title: "Failed to upload file",
-        description: "The server trolled us",
+        description: `${e}`,
         variant: "destructive",
         action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
       });

@@ -370,9 +370,7 @@ fi
 if [ ! -f .env ]; then
     echo """
         ${Purple}The .env file for docker does not exist.
-        The environment file will be creating from a template,
-        that will cause some errors. So please, stop the script with CTRL+C
-        and then create the .env file manually, and restart the script.${NC}
+        The environment file will be created from a template${NC}
     """
 
     echo """
@@ -388,38 +386,10 @@ if [ ! -f .env ]; then
         ENV_FILES=0
     else
         echo """
-            Creating the .env file from the .env.example file ...
+            Creating .env files from .env.example templates ...
         """
         cat .env.example > .env
-        ENV_FILES=1
-    fi
-fi
-
-# check if the .env file exists on the apps/web folder
-if [ ! -f apps/web/.env ]; then
-    echo """
-        ${Purple}The .env file for the apps does not exist.
-        The environment file will be creating from a template,
-        that will cause some errors. So please, stop the script with CTRL+C
-        and then create the .env file manually, and restart the script.${NC}
-    """
-
-    echo """
-        Would you like to create the .env file from the .env.example file ? (y/n)
-    """
-
-    read -r response
-
-    if [ "$response" = "n" ]; then
-        echo """
-            ${Green}Please create the .env file manually before running this script.${NC}
-        """
-        ENV_FILES=0
-    else
-        echo """
-            Creating the .env file from the .env.example file ...
-        """
-        cat ../../apps/web/.env.example.production > ../../apps/web/.env
+        cat .env.example> ../../apps/web/.env
         ENV_FILES=1
     fi
 fi

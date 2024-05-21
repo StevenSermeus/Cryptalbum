@@ -217,13 +217,21 @@ export default function Dashboard() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              <span className="" onClick={() => setCurrentAlbum("gallery")}>
+              <span className="cursor-pointer" onClick={() => setCurrentAlbum("gallery")}>
                 Gallery
               </span>
             </div>
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              <div className="mb-5">
+                <span
+                  className="cursor-pointer"
+                  onClick={() => setCurrentAlbum("gallery")}
+                >
+                  My Gallery 
+                </span>
+              </div>
               <div className="mb-5">
                 <span
                   className="cursor-pointer"

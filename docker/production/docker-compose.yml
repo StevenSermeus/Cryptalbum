@@ -11,7 +11,7 @@ services:
       postgres:
         condition: service_healthy
 
-  reverse-proxy:
+  proxy:
     image: nginx:latest
     container_name: proxy
     env_file: .env
@@ -91,7 +91,6 @@ services:
     image: quay.io/minio/minio
     container_name: minio
     command: server /data --console-address ":9001"
-    # To setup the keys, you need to execute the folowing command : docker exec -it CONTAINER_ID sh /init_minio_keys.sh
     env_file: .env
     ports:
       - ${MINIO_PORT}:9001
@@ -103,9 +102,9 @@ services:
       - ./conf/minio/init_minio_keys.sh:/init_minio_keys.sh
     healthcheck:
       test: ["CMD-SHELL", "mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} && mc admin info myminio"]
-      interval: 30s
+      interval: 2s
       timeout: 10s
-      retries: 5
+      retries: 10
     depends_on:
       seqgelf:
         condition: service_started
@@ -127,9 +126,9 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 30s
+      interval: 2s
       timeout: 10s
-      retries: 5
+      retries: 10
     depends_on:
       seqgelf:
         condition: service_started
@@ -139,8 +138,23 @@ services:
         gelf-address: "udp://host.docker.internal:12201"
         tag: "postgres"
 
-  #To add password to valkey, you need to mount the config file to the container
-  #Valkey is the real open source version of redis ^^
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    env_file: .env
+    configs:
+      - source: pgadmin
+        target: /pgadmin4/servers.json
+      - source: pgadmin_pass
+        target: /pgadmin4/gpass
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?err}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?err}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
   valkey:
     image: valkey/valkey:7.2
     container_name: valkey
@@ -151,7 +165,7 @@ services:
       - ./valkey_data:/data
     healthcheck:
       test: ["CMD-SHELL", "valkey-cli -a $${VALKEY_PASSWORD} ping"]
-      interval: 30s
+      interval: 2s
       timeout: 10s
       retries: 5
     depends_on:
@@ -181,9 +195,9 @@ services:
       - ./seq_data:/data
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
-      interval: 30s
+      interval: 2s
       timeout: 10s
-      retries: 5
+      retries: 10
 
   seqgelf:
     build:
@@ -196,9 +210,9 @@ services:
       - "12201:12201/udp"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://seq:80/health || exit 1"]
-      interval: 30s
+      interval: 2s
       timeout: 10s
-      retries: 5
+      retries: 10
     depends_on:
       seq:
         condition: service_healthy
@@ -206,6 +220,10 @@ services:
 configs:
   valkey:
     file: ./conf/valkey/valkey.conf
+  pgadmin:
+    file: ./conf/pgadmin/servers.json
+  pgadmin_pass:
+    file: ./conf/pgadmin/gpass
   nginx:
     file: ./conf/nginx/nginx.conf
   certs:
