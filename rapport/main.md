@@ -5,7 +5,7 @@ academicyear: 2023-2024
 category: MASI
 fontsize: 11pt
 titlepage: true
-code-block-font-size: \large
+code-block-font-size: \small
 default-language: bash
 minted:
   block_attributes:
@@ -46,6 +46,6 @@ babel-lang: french
 
 !include chapters/partage-fichier.md
 
-!include chapters/conclusion.md
+!include chapters/security-feature.md
 
-!include chapters/bib.md
+!include chapters/conclusion.md
