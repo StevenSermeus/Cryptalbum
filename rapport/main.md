@@ -47,5 +47,3 @@ babel-lang: french
 !include chapters/partage-fichier.md
 
 !include chapters/security-feature.md
-
-!include chapters/conclusion.md
