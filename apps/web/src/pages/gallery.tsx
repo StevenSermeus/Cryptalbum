@@ -157,7 +157,6 @@ export default function Dashboard() {
           pictureId: pictureId,
         });
       for (const device of devices || []) {
-        console.log(`the p key is ${p?.symKey}`);
 
         const publicKey = await importRsaPublicKey(device.publicKey);
         const encryptedKey = await encrypt(publicKey, p.symKey);

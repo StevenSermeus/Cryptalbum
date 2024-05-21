@@ -96,9 +96,6 @@ export default function ShareAlbumDialog({
         sharedPictures.push(sharedPicturesPerDevice);
       }
 
-      console.log(`albumId: ${albumId}`);
-      console.log(...sharedAlbum);
-
       await shareAlbumMutation.mutateAsync({
         albumId: albumId,
         sharedAlbumWithDevice: sharedAlbum,
