@@ -61,7 +61,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
-  const forwarededFor = req.headers["X-Forwarded-For"];
+  const forwarededFor = req.headers["x-forwarded-for"];
   const ip = forwarededFor
     ? (typeof forwarededFor === "string"
         ? forwarededFor

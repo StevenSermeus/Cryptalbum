@@ -9,8 +9,8 @@ Then it will create a new user, attach a read write policy on it and generate a 
 # variables
 MINIO_ADDR="http://minio:9000"
 MINIO_ALIAS="minio_dev"
-MINIO_ROOT_USER="root"
-MINIO_ROOT_PASSWORD="password"
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=M45153CU4PP9R0UPV1M
 MINIO_USER="produser"
 MINIO_PASSWORD="prodpassword"
 MINIO_NAME="prodkeys"
