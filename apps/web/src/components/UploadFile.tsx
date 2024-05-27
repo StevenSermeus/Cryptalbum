@@ -122,7 +122,7 @@ export default function FileUploadForm() {
       });
     } catch (e) {
       console.error(e);
-      e instanceof TRPCClientError? e.message : "The server trolled us";
+      e instanceof TRPCClientError ? e.message : "The server trolled us";
       toast({
         title: "Failed to upload file",
         description: `${e}`,

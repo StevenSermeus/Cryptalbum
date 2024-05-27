@@ -96,8 +96,8 @@ export const pictureRouter = createTRPCRouter({
           !picture
             ? logger.warn(`Picture ${input.pictureId} not found to share`)
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
@@ -301,11 +301,11 @@ export const pictureRouter = createTRPCRouter({
         if (!picture || picture.userId !== ctx.session.userId) {
           !picture
             ? logger.warn(
-              `Picture ${input.pictureId} not found to add to album`,
-            )
+                `Picture ${input.pictureId} not found to add to album`,
+              )
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the picture ${input.pictureId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
@@ -316,11 +316,11 @@ export const pictureRouter = createTRPCRouter({
         if (!album || album.userId !== ctx.session.userId) {
           !album
             ? logger.warn(
-              `Album ${input.albumId} not found to add the picture ${input.pictureId}`,
-            )
+                `Album ${input.albumId} not found to add the picture ${input.pictureId}`,
+              )
             : logger.warn(
-              `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
-            );
+                `User ${ctx.session.userId} is not the owner of the album ${input.albumId}`,
+              );
           throw new TRPCError({
             code: "FORBIDDEN",
             message:

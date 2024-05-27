@@ -1,4 +1,5 @@
-Identifiants Henallux : 
+Identifiants Henallux :
+
 - Steven Sermeus : etu44050
 - Gabriel Frippiat : etu55347
 
@@ -11,12 +12,12 @@ to the heavy docker images (2GB of RAM and 2 cores is recommended too)
 
 1. Navigate to compose file
 
-``` shell
+```shell
 $ cd docker/production
 ```
 
 The script `start.sh` will prompt for sudo privileges because It needs to write to `/etc/hosts` where it will add
-the domain name vimsnap.local with some docker configuration, in order to be able to use the app (**it is required**) 
+the domain name vimsnap.local with some docker configuration, in order to be able to use the app (**it is required**)
 
 ```shell
 $ ./start.sh
@@ -30,16 +31,18 @@ After the script is done you should be able to access the application via [https
 In order to validate and test encryption and logging we made accessible all of these services:
 
 1. [http://localhost:9000](https://localhost:9000) or using the IP address of your Ubuntu VM with port 9000 (http)
-    - user: admin
-    - password: M45153CU4PP9R0UPV1M
+
+   - user: admin
+   - password: M45153CU4PP9R0UPV1M
 
 2. [http://localhost:8081](https://localhost:8081) or using the IP address of your Ubuntu VM with port 8081 (http)
-    - user: admin
-    - password: M45153CU4PP9R0UPV1M
+
+   - user: admin
+   - password: M45153CU4PP9R0UPV1M
 
 3. [http://localhost:5050](https://localhost:5050) or using the IP address of your Ubuntu VM with port 5050 (http)
-    - user: admin@vimsnap.com
-    - password: M45153CU4PP9R0UPV1M
+   - user: admin@vimsnap.com
+   - password: M45153CU4PP9R0UPV1M
 
 The MINIO server will let you validate that the pictures are in fact encrypted (after clicking the pictures bucket)
 The SEQ server will show the logs of the application

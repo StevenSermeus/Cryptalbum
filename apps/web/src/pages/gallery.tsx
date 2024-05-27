@@ -157,7 +157,6 @@ export default function Dashboard() {
           pictureId: pictureId,
         });
       for (const device of devices || []) {
-
         const publicKey = await importRsaPublicKey(device.publicKey);
         const encryptedKey = await encrypt(publicKey, p.symKey);
         if (!encryptedKey) {
@@ -216,7 +215,10 @@ export default function Dashboard() {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <div className="flex items-center gap-2 font-semibold">
               <Package2 className="h-6 w-6" />
-              <span className="cursor-pointer" onClick={() => setCurrentAlbum("gallery")}>
+              <span
+                className="cursor-pointer"
+                onClick={() => setCurrentAlbum("gallery")}
+              >
                 Gallery
               </span>
             </div>
@@ -228,7 +230,7 @@ export default function Dashboard() {
                   className="cursor-pointer"
                   onClick={() => setCurrentAlbum("gallery")}
                 >
-                  My Gallery 
+                  My Gallery
                 </span>
               </div>
               <div className="mb-5">

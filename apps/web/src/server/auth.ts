@@ -111,15 +111,15 @@ export const authOptions: NextAuthOptions = {
           challenge.isValidated ||
           !(challenge.expires > new Date())
         ) {
-        logger.error(
-          `Login attemp from deviceId ${challenge?.userDevice.id} with an invalid or expired challenge ${credentials.challengeId}`,
-        );
+          logger.error(
+            `Login attemp from deviceId ${challenge?.userDevice.id} with an invalid or expired challenge ${credentials.challengeId}`,
+          );
           return null;
         }
         if (challenge.userDevice.user.email !== credentials.email) {
-        logger.error(
-          `Login attemp from deviceId ${challenge?.userDevice.id} with a email and challenge ${credentials.challengeId} mismatch`,
-        );
+          logger.error(
+            `Login attemp from deviceId ${challenge?.userDevice.id} with a email and challenge ${credentials.challengeId} mismatch`,
+          );
           return null;
         }
         await db.userDeviceChallenge.update({
