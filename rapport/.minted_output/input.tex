@@ -1,0 +1,851 @@
+%%
+% Copyright (c) 2017 - 2021, Pascal Wagler;
+% Copyright (c) 2014 - 2021, John MacFarlane
+%
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+% - Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+%
+% - Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in the
+% documentation and/or other materials provided with the distribution.
+%
+% - Neither the name of John MacFarlane nor the names of other
+% contributors may be used to endorse or promote products derived
+% from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+% COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%%
+
+%%
+% This is the Eisvogel pandoc LaTeX template.
+%
+% For usage information and examples visit the official GitHub page:
+% https://github.com/Wandmalfarbe/pandoc-latex-template
+%%
+
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*,table}{xcolor}
+%
+\documentclass[
+  11pt,
+  paper=a4,
+  ,captions=tableheading
+]{scrartcl}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{1.2}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\definecolor{default-linkcolor}{HTML}{A50000}
+\definecolor{default-filecolor}{HTML}{A50000}
+\definecolor{default-citecolor}{HTML}{4077C0}
+\definecolor{default-urlcolor}{HTML}{4077C0}
+
+\definecolor{sol-yellow}{HTML}{B58900}
+\definecolor{sol-orange}{HTML}{CB4B16}
+\definecolor{sol-red}{HTML}{DC322F}
+\definecolor{sol-magenta}{HTML}{D33682}
+\definecolor{sol-violet}{HTML}{6C71C4}
+\definecolor{sol-blue}{HTML}{268BD2}
+\definecolor{sol-cyan}{HTML}{2AA198}
+\definecolor{sol-green}{HTML}{859900}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Rapport projet Sécurité des applications},
+  pdfauthor={Sermeus Steven; Frippiat Gabriel},
+  hidelinks,
+  breaklinks=true,
+  pdfcreator={LaTeX via pandoc with the Eisvogel template}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=2.5cm,includehead=true,includefoot=true,centering,]{geometry}
+
+  \usepackage{fontawesome5}
+  \usepackage[outputdir=.minted_output]{minted}
+  \definecolor{solbg}{HTML}{efece2}
+  \setmintedinline{bgcolor={}}
+  \makeatletter
+  \let\listoflistings\@undefined
+  \makeatother
+    \setminted{fontsize=\small}
+  
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+% add backlinks to footnote references, cf. https://tex.stackexchange.com/questions/302266/make-footnote-clickable-both-ways
+\usepackage{footnotebackref}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+
+% Make use of float-package and set default placement for figures to H.
+% The option H means 'PUT IT HERE' (as  opposed to the standard h option which means 'You may put it here if you like').
+\usepackage{float}
+\floatplacement{figure}{H}
+
+
+
+  \usepackage[french]{babel}
+
+\usepackage{fontawesome5}
+\usepackage[outputdir=.minted_output]{minted}
+\definecolor{solbg}{HTML}{efece2}
+\setmintedinline{bgcolor={}}
+\usepackage{tikz}
+\usetikzlibrary{arrows,calc,shapes,automata,backgrounds,petri,fit,mindmap,decorations.pathmorphing,patterns,intersections,trees,positioning}
+\makeatletter
+\let\listoflistings\@undefined
+\makeatother
+\makeatletter
+\@ifpackageloaded{subfig}{}{\usepackage{subfig}}
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\captionsetup[subfloat]{margin=0.5em}
+\AtBeginDocument{%
+\renewcommand*\figurename{Figure}
+\renewcommand*\tablename{Table}
+}
+\AtBeginDocument{%
+\renewcommand*\listfigurename{List of Figures}
+\renewcommand*\listtablename{List of Tables}
+}
+\newcounter{pandoccrossref@subfigures@footnote@counter}
+\newenvironment{pandoccrossrefsubfigures}{%
+\setcounter{pandoccrossref@subfigures@footnote@counter}{0}
+\begin{figure}\centering%
+\gdef\global@pandoccrossref@subfigures@footnotes{}%
+\DeclareRobustCommand{\footnote}[1]{\footnotemark%
+\stepcounter{pandoccrossref@subfigures@footnote@counter}%
+\ifx\global@pandoccrossref@subfigures@footnotes\empty%
+\gdef\global@pandoccrossref@subfigures@footnotes{{##1}}%
+\else%
+\g@addto@macro\global@pandoccrossref@subfigures@footnotes{, {##1}}%
+\fi}}%
+{\end{figure}%
+\addtocounter{footnote}{-\value{pandoccrossref@subfigures@footnote@counter}}
+\@for\f:=\global@pandoccrossref@subfigures@footnotes\do{\stepcounter{footnote}\footnotetext{\f}}%
+\gdef\global@pandoccrossref@subfigures@footnotes{}}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+  \usepackage{polyglossia}
+  \setmainlanguage[]{french}
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Rapport projet Sécurité des applications}
+\author{Sermeus Steven \and Frippiat Gabriel}
+\date{}
+
+
+
+%%
+%% added
+%%
+
+%
+% language specification
+%
+% If no language is specified, use English as the default main document language.
+%
+
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=english]{babel}
+\else
+    % Workaround for bug in Polyglossia that breaks `\familydefault` when `\setmainlanguage` is used.
+  % See https://github.com/Wandmalfarbe/pandoc-latex-template/issues/8
+  % See https://github.com/reutenauer/polyglossia/issues/186
+  % See https://github.com/reutenauer/polyglossia/issues/127
+  \renewcommand*\familydefault{\sfdefault}
+    % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+  \usepackage{polyglossia}
+  \setmainlanguage[]{english}
+\fi
+
+
+
+%
+% for the background color of the title page
+%
+\usepackage{pagecolor}
+\usepackage{afterpage}
+\usepackage[margin=2.5cm,includehead=true,includefoot=true,centering]{geometry}
+
+%
+% break urls
+%
+\PassOptionsToPackage{hyphens}{url}
+
+%
+% When using babel or polyglossia with biblatex, loading csquotes is recommended
+% to ensure that quoted texts are typeset according to the rules of your main language.
+%
+\usepackage{csquotes}
+
+%
+% captions
+%
+\definecolor{caption-color}{HTML}{777777}
+\usepackage[font={stretch=1.2}, textfont={color=caption-color}, position=top, skip=4mm, labelfont=bf, singlelinecheck=false, justification=raggedright]{caption}
+\setcapindent{0em}
+
+%
+% blockquote
+%
+\definecolor{blockquote-border}{RGB}{221,221,221}
+\definecolor{blockquote-text}{RGB}{119,119,119}
+\usepackage{mdframed}
+\newmdenv[rightline=false,bottomline=false,topline=false,linewidth=3pt,linecolor=blockquote-border,skipabove=\parskip]{customblockquote}
+\renewenvironment{quote}{\begin{customblockquote}\list{}{\rightmargin=0em\leftmargin=0em}%
+\item\relax\color{blockquote-text}\ignorespaces}{\unskip\unskip\endlist\end{customblockquote}}
+
+%
+% Source Sans Pro as the de­fault font fam­ily
+% Source Code Pro for monospace text
+%
+% 'default' option sets the default
+% font family to Source Sans Pro, not \sfdefault.
+%
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+    \usepackage[default]{sourcesanspro}
+  \usepackage{sourcecodepro}
+  \else % if not pdftex
+    \usepackage[default]{sourcesanspro}
+  \usepackage{sourcecodepro}
+
+  % XeLaTeX specific adjustments for straight quotes: https://tex.stackexchange.com/a/354887
+  % This issue is already fixed (see https://github.com/silkeh/latex-sourcecodepro/pull/5) but the
+  % fix is still unreleased.
+  % TODO: Remove this workaround when the new version of sourcecodepro is released on CTAN.
+  \ifxetex
+    \makeatletter
+    \defaultfontfeatures[\ttfamily]
+      { Numbers   = \sourcecodepro@figurestyle,
+        Scale     = \SourceCodePro@scale,
+        Extension = .otf }
+    \setmonofont
+      [ UprightFont    = *-\sourcecodepro@regstyle,
+        ItalicFont     = *-\sourcecodepro@regstyle It,
+        BoldFont       = *-\sourcecodepro@boldstyle,
+        BoldItalicFont = *-\sourcecodepro@boldstyle It ]
+      {SourceCodePro}
+    \makeatother
+  \fi
+  \fi
+
+%
+% heading color
+%
+\definecolor{heading-color}{RGB}{40,40,40}
+\addtokomafont{section}{\color{heading-color}}
+% When using the classes report, scrreprt, book,
+% scrbook or memoir, uncomment the following line.
+%\addtokomafont{chapter}{\color{heading-color}}
+
+%
+% variables for title, author and date
+%
+\usepackage{titling}
+\title{Rapport projet Sécurité des applications}
+\author{Sermeus Steven, Frippiat Gabriel}
+\date{}
+
+%
+% tables
+%
+
+\definecolor{table-row-color}{HTML}{F5F5F5}
+\definecolor{table-rule-color}{HTML}{999999}
+
+%\arrayrulecolor{black!40}
+\arrayrulecolor{table-rule-color}     % color of \toprule, \midrule, \bottomrule
+\setlength\heavyrulewidth{0.3ex}      % thickness of \toprule, \bottomrule
+\renewcommand{\arraystretch}{1.3}     % spacing (padding)
+
+
+%
+% remove paragraph indention
+%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+
+%
+%
+% Listings
+%
+%
+
+
+\usepackage[multiple]{footmisc}
+
+%
+% header and footer
+%
+\usepackage{fancyhdr}
+
+\fancypagestyle{eisvogel-header-footer}{
+  \fancyhead{}
+  \fancyfoot{}
+  \lhead[]{Rapport projet Sécurité des applications}
+  \chead[]{}
+  \rhead[Rapport projet Sécurité des applications]{}
+  \lfoot[\thepage]{Sermeus Steven, Frippiat Gabriel}
+  \cfoot[]{}
+  \rfoot[Sermeus Steven, Frippiat Gabriel]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+\pagestyle{eisvogel-header-footer}
+
+%%
+%% end added
+%%
+
+
+
+\begin{document}
+
+%%
+%% begin titlepage
+%%
+\begin{titlepage}
+\newgeometry{left=6cm}
+\newcommand{\colorRule}[3][black]{\textcolor[HTML]{#1}{\rule{#2}{#3}}}
+\begin{flushleft}
+\noindent
+\\[-1em]
+\color[HTML]{5F5F5F}
+\makebox[0pt][l]{\colorRule[435488]{1.3\textwidth}{4pt}}
+\par
+\noindent
+
+{
+  \setstretch{1.4}
+  \vfill
+  \noindent {\huge \textbf{\textsf{Rapport projet Sécurité des
+applications}}}
+    \vskip 2em
+  \noindent {\Large \textsf{Sermeus Steven, Frippiat Gabriel}}
+  \vfill
+}
+
+
+\textsf{}
+\end{flushleft}
+\end{titlepage}
+\restoregeometry
+
+%%
+%% end titlepage
+%%
+
+
+
+\newpage
+
+\renewcommand{\contentsname}{Table des matières}
+
+\tableofcontents
+\newpage
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Pour ce projet, nous avions comme objectif de développer une application
+permettant de partager des photos avec du chiffrement de bout en bout.
+L’application avait comme contrainte d’utiliser l’architecture
+client-serveur où le serveur ne peut pas être considéré comme une entité
+de confiance. Ce serveur permet d’enregistrer de nouveaux utilisateurs,
+d’authentifier des utilisateurs et d’autoriser des utilisateurs
+authentifiés d’effectuer des actions sur l’application.
+
+Les fonctionnalités attendues étaient :
+
+\begin{itemize}
+\tightlist
+\item
+  La création d’un album photos
+\item
+  L’upload de photos
+\item
+  Le partage de photos
+\item
+  Le partage d’album
+\item
+  La création d’un compte
+\item
+  S’authentifier sur l’application
+\item
+  Pouvoir utiliser l’application sur plusieurs devices
+\end{itemize}
+
+Pour réaliser ce projet, nous avons utilisé différentes technologies qui
+sont présentées et détaillées dans la suite de ce rapport.
+
+\newpage
+
+\hypertarget{architecture-physique}{%
+\section{Architecture physique}\label{architecture-physique}}
+
+Pour répondre à la problématique de l’énoncé tout en respectant les
+contraintes, nous avons utilisé une architecture client-serveur où le
+serveur ne peut pas être considéré comme un acteur de confiance. De ce
+fait, il a été nécessaire de mettre en place un chiffrement de bout en
+bout des informations sensibles. De plus, la sécurité des différents
+composants de l’application devait être assurée. Pour cela, nous avons
+utilisé différentes technologies pour chaque composant de
+l’architecture.
+
+\begin{figure}
+\centering
+\includegraphics{/tmp/tex2pdf.-9228386339f5691c/af3941e5feca7e69e61e8e1f3455d6518b7164e5.png}
+\caption{Architecture physique}
+\end{figure}
+
+Comme le montre le schéma ci-dessus, l’architecture physique de notre
+application est composée de plusieurs éléments :
+
+\begin{itemize}
+\item
+  \textbf{Base de données} : Celle-ci permet de stocker les informations
+  des utilisateurs à long terme.
+\item
+  \textbf{Reverse proxy} : Il permet d’assurer la connexion HTTPS entre
+  le client et l’infrastructure. Nous avons utilisé Nginx, il assure
+  également la connexion en HTTPS entre le serveur et le client.
+\item
+  \textbf{Serveur de fichiers} : L’utilisateur pouvant être malveillant,
+  nous avons décidé de ne pas stocker les fichiers sur le serveur
+  principal. Nous avons délégué cette tâche à un serveur de fichiers
+  dédié, Minio.
+\item
+  \textbf{Serveur de logs} : Pour avoir un stockage de log fiable et
+  sécurisé, nous avons utilisé un serveur de logs dédié, Seq.
+\item
+  \textbf{Base de données clés valeurs} : Celle-ci permet d’effectuer
+  des opérations de lecture et d’écriture rapides et nous a été utile
+  pour effectuer du rate limiting sur les différentes routes de
+  l’application. Nous avons utilisé Valkey, qui est le fork open-source
+  de Redis.
+\item
+  \textbf{Next.js} : Il s’agit du coeur de l’application, il permet de
+  gérer les différentes routes et de générer les pages côté serveur.
+\end{itemize}
+
+\hypertarget{cryptographie}{%
+\section{Cryptographie}\label{cryptographie}}
+
+Dans le cadre de ce projet, nous avons utilisé deux types de
+cryptographie : la cryptographie symétrique et la cryptographie
+asymétrique.
+
+\hypertarget{cryptographie-asymuxe9trique}{%
+\subsection{Cryptographie
+asymétrique}\label{cryptographie-asymuxe9trique}}
+
+Celle-ci est utilisée pour l’authentification des utilisateurs ainsi que
+le partage de clés de chiffrement symétrique. Nous avons utilisé la
+librairie standard de JavaScript, \mintinline[]{c}{crypto}, pour générer
+des clés RSA et les utiliser pour chiffrer et déchiffrer des données. La
+librairie standard permet uniquement d’utiliser l’algorithme RSA pour de
+chiffrement asymétrique. Nous avons utilisé une clé de taille 4096, même
+si cette taille de clé est suspectée d’être “cassable”. Pour le moment
+elle reste sécurisée et, en cas de besoin, il est toujours possible
+d’augmenter la taille de la clé.
+
+\hypertarget{authentification}{%
+\subsubsection{Authentification}\label{authentification}}
+
+Lorsqu’un utilisateur s’inscrit sur notre application, un couple de clés
+RSA est généré. La clé publique de l’utilisateur est stockée dans la
+base de données et la clé privée est stockée dans le navigateur de
+l’utilisateur. Si l’utilisateur souhaite se connecter, il doit
+déchiffrer un challenge qui lui est envoyé par le serveur. Ce challenge
+est chiffré avec la clé publique de l’utilisateur. Si l’utilisateur
+parvient à déchiffrer le challenge, il est considéré comme authentifié
+étant donné que seul l’utilisateur possède la clé privée correspondante
+à la clé publique stockée dans la base de données permettant de
+déchiffrer le challenge.
+
+\hypertarget{partage-de-cluxe9s-de-chiffrement-symuxe9trique}{%
+\subsubsection{Partage de clés de chiffrement
+symétrique}\label{partage-de-cluxe9s-de-chiffrement-symuxe9trique}}
+
+Un mécanisme similaire est utilisé pour le partage de clé de chiffrement
+symétrique. Avant leur envoi vers le serveur, elles sont chiffrées avec
+la clé publique de l’utilisateur destinataire. Ainsi seul l’utilisateur
+destinataire peut déchiffrer la clé de chiffrement symétrique.
+
+\hypertarget{cryptographie-symuxe9trique}{%
+\subsection{Cryptographie
+symétrique}\label{cryptographie-symuxe9trique}}
+
+Nous avons choisi d’utiliser AES-GCM, un algorithme de chiffrement
+symétrique qui permet de chiffrer et d’authentifier les données. Tout
+comme pour la cryptographie asymétrique, nous avons utilisé la librairie
+standard de JavaScript, \mintinline[]{c}{crypto}, pour chiffrer et
+déchiffrer les données.
+
+\hypertarget{hmac}{%
+\section{Hmac}\label{hmac}}
+
+Pour assurer que les logs n’aient pas été modifiés, nous avons utilisé
+un HMAC. Celui-ci est généré à partir du contenu du log et d’une clé
+secrète stockée sur le serveur. Le HMAC est stocké dans le log. Si le
+message est modifié, le HMAC ne correspondra plus au contenu du log et
+nous pourrons détecter qu’il y a eu une modification.
+
+\hypertarget{fonctionnalituxe9s-de-lapplication}{%
+\section{Fonctionnalités de
+l’application}\label{fonctionnalituxe9s-de-lapplication}}
+
+\hypertarget{authentification}{%
+\subsection{Authentification}\label{authentification}}
+
+\begin{figure}
+\centering
+\includegraphics{/tmp/tex2pdf.-9228386339f5691c/4eaf66a6cac0b369a5b3f5017e3dbb240406fbc5.png}
+\caption{Authentification}
+\end{figure}
+
+Comme le montre le diagramme ci-dessus, lorsqu’un utilisateur souhaite
+s’authentifier, il va envoyer au serveur la clé publique du device
+depuis lequel il essaye de se connecter. Lorsque le serveur reçoit cette
+clé publique, il vérifie d’abord si elle existe et va alors renvoyer à
+l’utilisateur un challenge si cette clé publique existe bien dans la
+base de données. Ce challenge est alors uniquement déchiffrable avec la
+clé privée correspondante. Une fois le challenge déchiffré au serveur,
+le serveur vérifie bien si le challenge est correct ou non. Si le
+challenge est correct, alors l’utilisateur peut se connecter et reçoit
+un JWT (Json Web Token). Dans le cas contraire, l’utilisateur ne peut se
+connecter.
+
+\newpage
+
+\hypertarget{management-des-devices}{%
+\subsection{Management des devices}\label{management-des-devices}}
+
+L’application permet à chaque utilisateur d’ajouter autant de devices
+qu’il le souhaite. Quand un utilisateur ajoute un device, une paire de
+clés publique-privée est générée pour ce device. Cela se produit tout
+d’abord lorsque l’utilisateur va créer son compte pour la première fois,
+une paire de clés publique-privée est alors créé pour ce device.
+Ensuite, une fois connecté sur son device, l’utilisateur va avoir la
+possibilité d’ajouter d’autres devices. Une fois la paire de clés
+générée, l’utilisateur va devoir valider le device qu’il vient d’ajouter
+via un device de confiance. C’est-à-dire un device déjà “Trust” (de
+confiance) par l’utilisateur.
+
+Par exemple, si un utilisateur souhaite ajouter un 2e device, il va
+devoir, sur son 1er device, cliquer sur le bouton “Trust” afin
+d’affirmer qu’il a confiance en ce device. Une fois cela fait, il va
+pouvoir se connecter à ce 2e device.
+
+Une fois qu’un device est “Trust”, il faut alors que l’utilisateur
+puisse avoir accès à ses photos sur ce nouveau device. Pour cela, chaque
+clé symétrique pour chaque photo va être chiffrée avec la clé publique
+de ce nouveau device. Pour les noms d’album, ils seront directement
+chiffrés avec la clé publique du device.
+
+Dans le cas où un utilisateur décide de ne plus “Trust” un device car il
+l’a perdu où il n’y a plus accès, alors on ne peut ni avoir accès à ce
+device, ni aux photos et albums accessibles précédemment via ce device.
+
+Lors de chaque requête vers le serveur, on vérifie d’abord si le device
+en question est “Trust” (de confiance). Dans notre code, chaque
+procédure est une “protectedProcedure” qui s’assure que le device qui
+est en train d’effectuer une requête est “Trust”. Il existe des
+exceptions concernant le login et la connexion, sinon il serait
+impossible d’accéder à l’application.
+
+\newpage
+
+\hypertarget{upload-de-photos-et-cruxe9ation-dun-album}{%
+\subsection{Upload de photos et création d’un
+album}\label{upload-de-photos-et-cruxe9ation-dun-album}}
+
+\hypertarget{upload-de-photos}{%
+\subsubsection{Upload de photos}\label{upload-de-photos}}
+
+Tout d’abord, il est possible d’upload une photo sans que cette dernière
+fasse partie d’un album. Lorsqu’une photo est upload par un utilisateur,
+une entrée est ajoutée pour la table “Picture” et “SharedPicture”. Même
+si la photo n’est pas encore partagée avec quelqu’un, une entrée existe
+dans “SharedPicture”, qui est la table permettant de voir qui a accès à
+la photo. Cette table va alors permettre de récupérer les photos de
+l’utilisateur qui ne sont pas présentes dans un album.
+
+Lorsqu’une photo est upload, une clé symétrique est générée. Cette clé
+symétrique va alors être utilisée pour chiffrer la photo. Il n’existe
+qu’une seule clé symétrique par photo même si la photo se trouve dans
+différents albums. Il n’y a donc pas de clé symétrique par album, mais
+bien par photo. Le fait d’avoir une clé symétrique par photo permet, en
+cas de réussite d’un attaquant à récupérer cette clé, d’avoir accès
+uniquement à la photo en question et non à l’entièreté d’un album.
+
+Il existe un cas particulier, lorsqu’une photo est ajoutée à un album
+avec une certaine personne et que cette dernière est déjà présente dans
+un autre album avec la même photo qui est, du coup, déjà partagée avec
+cette personne. Prenons 3 personnes : A, B et C. A et B ont un album en
+commun avec une photo x ajoutée par A. Si A, B et C crée un album
+commun, et que A décide d’y ajouter cette photo x, alors l’accès à la
+photo n’est donné qu’à C étant donné que B et A possèdent déjà l’accès à
+cette photo.
+
+\newpage
+
+\hypertarget{cruxe9ation-dun-album}{%
+\subsubsection{Création d’un album}\label{cruxe9ation-dun-album}}
+
+Comme expliqué précédemment, la clé symétrique permettant de chiffrer
+les photos n’est pas basée sur un album, mais bien par photo. Lorsqu’un
+utilisateur crée un album, l’application va alors faire une requête au
+serveur afin de récupérer la clé publique de l’utilisateur afin de
+chiffrer le nom de l’album. Le nom de l’album est quant à lui, chiffré
+avec la clé publique du device de l’utilisateur. L’application envoie
+alors au serveur le nom de l’album chiffré ainsi que l’id du device sur
+lequel l’album a été créé. Le nom de l’album est alors déchiffré via la
+clé privée qui est stockée localement sur le device de l’utilisateur. Il
+s’agit du scénario classique lorsqu’un utilisateur possède un seul
+device.
+
+Le choix d’utiliser la clé publique du device de l’utilisateur pour
+chiffrer le nom de l’album plutôt qu’une clé symétrique est que le
+chiffrement du nom reste quelque chose d’assez rapide contrairement au
+chiffrement des photos qui requière le chiffrement symétrique afin
+d’être performant.
+
+Dans la réalité, quand on un utilisateur crée un album, l’application va
+faire une requête au serveur afin d’avoir toutes les clés publiques pour
+chaque device que possède l’utilisateur. Avec ces clés publiques, le nom
+de l’album est chiffré autant de fois qu’il y a de clés publiques. Un
+dictionnaire est alors renvoyé au serveur. Ce dictionnaire est composé
+d’un device id et d’un chiffrement lié à ce device via la clé publique
+de ce dernier.
+
+Exemple : deviceID1 = chiffrementPublicKeyDeviceID1 deviceID2 =
+chiffrementPublicKeyDeviceID2 …
+
+Selon le device utilisé par l’utilisateur, le nom de l’album est alors
+déchiffré via la clé privée stockée localement.
+
+\hypertarget{stockage-avec-minio}{%
+\subsubsection{Stockage avec Minio}\label{stockage-avec-minio}}
+
+Pour envoyer la photo chiffrée au serveur, il y a d’abord besoin de la
+formater. Étant donné qu’en HTTP il n’est pas possible d’envoyer la
+photo chiffrée sous forme d’un array buffer, il faut formater la photo
+chiffrée en hexadécimal. Une fois les données relatives à la photo
+stockées dans la base de données, la photo est stockée dans un serveur à
+part (le serveur de fichier Minio).
+
+Concernant l’intégrité des photos, au moment d’upload le chiffrement de
+la photo, une transaction SQL est crée. Cette transaction va alors
+permettre de s’assurer que l’upload de la photo sur le serveur de
+fichier s’est bien déroulé. Avant de terminer la transaction, on
+vérifie, via une méthode de Minio, si l’upload s’est bien déroulé et que
+les données relatives à la photo sont bien ajoutées à la base de
+données. S’il n’y a pas d’erreur, alors la transaction est validée et le
+chiffrement de la photo se trouve bien sur le serveur de fichiers Minio.
+En cas de problème, la transaction est annulée et les données relatives
+à la photo ne sont ni ajoutées à la base de données ni au serveur de
+fichiers. Cela permet de s’assurer que la photo soit bien ajoutée au
+serveur de fichier de manière intègre.
+
+\hypertarget{partage-des-photos-et-albums}{%
+\subsection{Partage des photos et
+albums}\label{partage-des-photos-et-albums}}
+
+\hypertarget{partage-dune-photo}{%
+\subsubsection{Partage d’une photo}\label{partage-dune-photo}}
+
+Concernant le partage d’une photo, il faut d’abord récupérer les clés
+publiques de l’utilisateur avec qui on souhaite partager la photo. Pour
+cela, il y a une requête faite au serveur afin de récupérer toutes les
+clés publiques de chaque device de l’utilisateur à qui on souhaite
+partager notre photo. Le serveur va alors nous répondre avec un
+dictionnaire contenant chaque id de chaque device avec sa clé publique
+correspondante. Une fois les clés publiques récupérées, la clé
+symétrique utilisée pour chiffrer la photo va alors être chiffrée autant
+de fois qu’il existe de clé publique. Il y a alors un dictionnaire
+renvoyé au serveur contenant l’id de chaque device avec le chiffrement
+de la clé symétrique par device.
+
+\begin{minted}[linenos,style=rainbow_dash,frame=lines,framesep=2pt,bgcolor=solbg,breaklines=true,autogobble]{c}
+deviceID1 = chiffrementKeySymétricDeviceID1
+deviceID2 = chiffrementKeySymétricDeviceID2
+\end{minted}
+
+De plus, il est tout à fait possible de partager une photo qui n’est
+présente dans aucun album.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth,height=\textheight]{/tmp/tex2pdf.-9228386339f5691c/63818f26aded7a6d4b1489d21660635b14570bbf.png}
+\caption{Partage de photo}
+\end{figure}
+
+Comme le montre le diagramme ci-dessus, l’utilisateur avec qui la photo
+est partagée peut tout simplement déchiffrer la clé symétrique chiffrée
+avec sa clé privée stockée localement afin d’avoir accès à la valeur de
+la clé symétrique. Une fois cette valeur récupérée, il peut alors
+déchiffrer la photo et y avoir accès.
+
+\hypertarget{partage-dun-album}{%
+\subsubsection{Partage d’un album}\label{partage-dun-album}}
+
+Concernant le partage d’un album, il s’agit du même mécanisme que celui
+décrit précédemment concernant le partage d’une photo. Il y a cependant
+le nom de l’album qui lui aussi est chiffré via la clé publique du
+device de l’utilisateur. Pour cela, il y a d’abord une requête au
+serveur pour récupérer les clés publiques de l’utilisateur afin de
+chiffrer le nom de l’album et ensuite une requête afin de récupérer les
+clés publiques de l’utilisateur avec qui on souhaite partager l’album.
+Comme expliqué précédemment, chacune des clés symétriques va alors être
+chiffrée par les clés publiques existantes.
+
+Comme expliqué précédemment, l’utilisateur avec qui l’album est partagé
+va pouvoir déchiffrer le nom de l’album via sa clé privée.
+
+\hypertarget{rate-limiting}{%
+\section{Rate limiting}\label{rate-limiting}}
+
+Comme cité plus haut dans le rapport, nous avons utilisé un système de
+rate limiting pour éviter les attaques de type brute force et DOS(Denial
+of Service). Son implémentation est assez simple, aucun package n’a été
+utilisé car aucun ne correspondait à nos besoins. Nous avons donc
+implémenté notre propre système de rate limiting. Celui-ci est un
+middleware qui est appelé avant les requêtes. Il incrémente un compteur
+stocké dans la base de données Valkey pour chaque adresse IP et chaque
+endpoint. Si le compteur dépasse une certaine valeur, une erreur est
+renvoyée. Voici le code de ce middleware :
+
+\begin{minted}[linenos,style=rainbow_dash,frame=lines,framesep=2pt,bgcolor=solbg,breaklines=true,autogobble]{ts}
+export const rateLimitedMiddleware = t.middleware(
+  async ({ path, ctx, next }) => {
+    const res = await ctx.cache.incr(`${path}:${ctx.ip}`);
+    if (res === 1) {
+      await ctx.cache.expire(`${path}:${ctx.ip}`, env.RATE_LIMIT_WINDOW);
+    }
+    if (res > env.RATE_LIMIT_MAX) {
+      logger.error(`Rate limit exceeded for ${ctx.ip} on ${path}`);
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+    }
+    return next();
+  },
+);
+\end{minted}
+
+\hypertarget{protection-contre-les-injections-sql}{%
+\section{Protection contre les injections
+SQL}\label{protection-contre-les-injections-sql}}
+
+Pour nous protéger contre les injections SQL, nous avons utilisé un ORM
+(Object-Relational Mapping) nommé Prisma. Prisma est un ORM qui permet
+de manipuler la base de données sans écrire de requêtes SQL. Celui-ci
+est sécurisé par défaut et empêche les injections SQL.
+
+\hypertarget{protection-contre-les-attaques-xss}{%
+\section{Protection contre les attaques
+XSS}\label{protection-contre-les-attaques-xss}}
+
+Pour nous protéger contre les attaques XSS, nous utilisons la librairie
+react-dom qui permet de manipuler le DOM de manière sécurisée. React DOM
+échappe automatiquement les caractères spéciaux et empêche les attaques
+XSS.
+
+\hypertarget{analyse-de-code-snyk}{%
+\section{Analyse de code Snyk}\label{analyse-de-code-snyk}}
+
+Pour analyser notre code et détecter les vulnérabilités, nous avons
+utilisé Snyk. Snyk est un outil qui permet de détecter les
+vulnérabilités dans les dépendances de notre projet. Il scanne les
+dépendances et les compare à une base de données de vulnérabilités. Si
+une vulnérabilité est détectée, Snyk nous avertit et nous propose des
+solutions pour la corriger. De plus, Snyk peut également être utilisé
+pour détecter les vulnérabilités dans le code source.
+
+\hypertarget{signature-des-commits-git}{%
+\section{Signature des commits git}\label{signature-des-commits-git}}
+
+Pour éviter une attaque de type “supply chain attack” ou d’usurpation
+d’identité, nous avons mis en place une signature des commits git. Cela
+permet de vérifier l’identité de l’auteur via sa clé GPG. Ainsi, si un
+attaquant modifie le code source et ne signe pas le commit, il sera
+facilement détecté.
+
+
+
+\end{document}

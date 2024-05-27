@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{export} \PYG{k+kd}{const} \PYG{n+nx}{rateLimitedMiddleware} \PYG{o}{=} \PYG{n+nx}{t}\PYG{p}{.}\PYG{n+nx}{middleware}\PYG{p}{(}
+  \PYG{k}{async} \PYG{p}{(\PYGZob{}} \PYG{n+nx}{path}\PYG{p}{,} \PYG{n+nx}{ctx}\PYG{p}{,} \PYG{n+nx}{next} \PYG{p}{\PYGZcb{})} \PYG{p}{=\PYGZgt{}} \PYG{p}{\PYGZob{}}
+    \PYG{k+kd}{const} \PYG{n+nx}{res} \PYG{o}{=} \PYG{k}{await} \PYG{n+nx}{ctx}\PYG{p}{.}\PYG{n+nx}{cache}\PYG{p}{.}\PYG{n+nx}{incr}\PYG{p}{(}\PYG{l+s+sb}{`}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{:}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ctx}\PYG{p}{.}\PYG{n+nx}{ip}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n+nx}{res} \PYG{o}{===} \PYG{l+m+mf}{1}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{k}{await} \PYG{n+nx}{ctx}\PYG{p}{.}\PYG{n+nx}{cache}\PYG{p}{.}\PYG{n+nx}{expire}\PYG{p}{(}\PYG{l+s+sb}{`}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{:}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ctx}\PYG{p}{.}\PYG{n+nx}{ip}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{,} \PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{RATE\PYGZus{}LIMIT\PYGZus{}WINDOW}\PYG{p}{);}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n+nx}{res} \PYG{o}{\PYGZgt{}} \PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{RATE\PYGZus{}LIMIT\PYGZus{}MAX}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n+nx}{logger}\PYG{p}{.}\PYG{n+nx}{error}\PYG{p}{(}\PYG{l+s+sb}{`Rate limit exceeded for }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ctx}\PYG{p}{.}\PYG{n+nx}{ip}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ on }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+      \PYG{k}{throw} \PYG{o+ow}{new} \PYG{n+nx}{TRPCError}\PYG{p}{(\PYGZob{}} \PYG{n+nx}{code}\PYG{o}{:} \PYG{l+s+s2}{\PYGZdq{}TOO\PYGZus{}MANY\PYGZus{}REQUESTS\PYGZdq{}} \PYG{p}{\PYGZcb{});}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{k}{return} \PYG{n+nx}{next}\PYG{p}{();}
+  \PYG{p}{\PYGZcb{},}
+\PYG{p}{);}
+\end{Verbatim}

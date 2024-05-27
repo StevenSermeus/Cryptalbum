@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{deviceID1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{chiffrementKeySymétricDeviceID1}
+\PYG{n}{deviceID2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{chiffrementKeySymétricDeviceID2}
+\end{Verbatim}
