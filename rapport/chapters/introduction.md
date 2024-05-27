@@ -4,12 +4,12 @@ Pour ce projet, nous avions comme objectif de développer une application permet
 
 Les fonctionnalités attendues étaient :
 
-    * La création d'un album photos
-    * L'upload de photos
-    * Le partage de photos
-    * Le partage d'album
-    * La création d'un compte
-    * S'authentifier sur l'application
-    * Pouvoir utiliser l'application sur plusieurs devices
-  
+- La création d'un album photos
+- L'upload de photos
+- Le partage de photos
+- Le partage d'album
+- La création d'un compte
+- S'authentifier sur l'application
+- Pouvoir utiliser l'application sur plusieurs devices
+
 Pour réaliser ce projet, nous avons utilisé différentes technologies qui sont présentées et détaillées dans la suite de ce rapport.

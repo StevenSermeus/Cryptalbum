@@ -1,0 +1,22 @@
+@startuml Acitvity
+
+start
+
+:getNumberOfUsers();
+
+note right
+  Create a thread by user
+end note
+
+fork
+  :initiateSshConnection();
+  :installVsCodeServerStandAlone();
+  :StartWebBrowser();
+  :SimulateUser();
+  :CloseWebBrowser();
+  :CloseSshConnection();
+end fork
+
+stop
+
+@enduml

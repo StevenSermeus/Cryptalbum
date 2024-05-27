@@ -8,6 +8,8 @@ Lorsqu'une photo est upload, une clé symétrique est générée. Cette clé sym
 
 Il existe un cas particulier, lorsqu'une photo est ajoutée à un album avec une certaine personne et que cette dernière est déjà présente dans un autre album avec la même photo qui est, du coup, déjà partagée avec cette personne. Prenons 3 personnes : A, B et C. A et B ont un album en commun avec une photo x ajoutée par A. Si A, B et C crée un album commun, et que A décide d'y ajouter cette photo x, alors l'accès à la photo n'est donné qu'à C étant donné que B et A possèdent déjà l'accès à cette photo.
 
+\newpage
+
 ### Création d'un album
 
 Comme expliqué précédemment, la clé symétrique permettant de chiffrer les photos n'est pas basée sur un album, mais bien par photo. Lorsqu'un utilisateur crée un album, l'application va alors faire une requête au serveur afin de récupérer la clé publique de l'utilisateur afin de chiffrer le nom de l'album. Le nom de l'album est quant à lui, chiffré avec la clé publique du device de l'utilisateur. L'application envoie alors au serveur le nom de l'album chiffré ainsi que l'id du device sur lequel l'album a été créé. Le nom de l'album est alors déchiffré via la clé privée qui est stockée localement sur le device de l'utilisateur. Il s'agit du scénario classique lorsqu'un utilisateur possède un seul device.

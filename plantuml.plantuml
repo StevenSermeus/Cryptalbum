@@ -1,0 +1,31 @@
+@startuml
+activate Client
+Client -> Server: Connection request : (Public Key)
+
+activate Server
+
+Server -> Crypto : Cypher(Public Key, challenge)
+activate Crypto
+Crypto -> Server : cyphered challenge
+deactivate Crypto
+
+
+Server -> Client : cyphered challenge
+deactivate Server
+deactivate Client
+
+
+Client -> Crypto : decypher(challenge)
+activate Client
+activate Crypto
+Crypto -> Client : decyphered challenge
+deactivate Crypto
+
+Client -> Server : decyphered challenge
+activate Server
+Server -> Server : Check challenge
+Server -> Client : Connection granted : JSON Web Token
+deactivate Server
+deactivate Client
+
+@enduml

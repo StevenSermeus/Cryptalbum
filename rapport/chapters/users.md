@@ -1,10 +1,12 @@
-### Authentification
+## Authentification
 
-![Authentification](../assets/authentification.png "Authentification")
+![Authentification](../assets/authentification.png "Authentification"){whidth=70%}
 
 Comme le montre le diagramme ci-dessus, lorsqu'un utilisateur souhaite s'authentifier, il va envoyer au serveur la clé publique du device depuis lequel il essaye de se connecter. Lorsque le serveur reçoit cette clé publique, il vérifie d'abord si elle existe et va alors renvoyer à l'utilisateur un challenge si cette clé publique existe bien dans la base de données. Ce challenge est alors uniquement déchiffrable avec la clé privée correspondante. Une fois le challenge déchiffré au serveur, le serveur vérifie bien si le challenge est correct ou non. Si le challenge est correct, alors l'utilisateur peut se connecter et reçoit un JWT (Json Web Token). Dans le cas contraire, l'utilisateur ne peut se connecter.
 
-### Management des devices
+\newpage
+
+## Management des devices
 
 L'application permet à chaque utilisateur d'ajouter autant de devices qu'il le souhaite. Quand un utilisateur ajoute un device, une paire de clés publique-privée est générée pour ce device. Cela se produit tout d'abord lorsque l'utilisateur va créer son compte pour la première fois, une paire de clés publique-privée est alors créé pour ce device. Ensuite, une fois connecté sur son device, l'utilisateur va avoir la possibilité d'ajouter d'autres devices. Une fois la paire de clés générée, l'utilisateur va devoir valider le device qu'il vient d'ajouter via un device de confiance. C'est-à-dire un device déjà "Trust" (de confiance) par l'utilisateur.
 

@@ -9,7 +9,7 @@ Concernant le partage d'une photo, il faut d'abord récupérer les clés publiqu
 
 De plus, il est tout à fait possible de partager une photo qui n'est présente dans aucun album.
 
-![Partage de photo](../assets/partage_key.png "Partage de photo")
+![Partage de photo](../assets/partage_key.png "Partage de photo"){ width=70% }
 
 Comme le montre le diagramme ci-dessus, l'utilisateur avec qui la photo est partagée peut tout simplement déchiffrer la clé symétrique chiffrée avec sa clé privée stockée localement afin d'avoir accès à la valeur de la clé symétrique. Une fois cette valeur récupérée, il peut alors déchiffrer la photo et y avoir accès.
 

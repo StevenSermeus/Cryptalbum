@@ -1,5 +1,5 @@
 ---
-title: "Rapport"
+title: "Rapport projet Sécurité des applications"
 author: ["Sermeus Steven", "Frippiat Gabriel"]
 academicyear: 2023-2024
 category: MASI
@@ -30,9 +30,16 @@ header-includes:
 babel-lang: french
 ---
 
+\newpage
+
+\renewcommand{\contentsname}{Table des matières}
+
+\tableofcontents
+\newpage
+
 !include chapters/introduction.md
 
-# Architecture
+\newpage
 
 !include chapters/architecture-physique.md
 
@@ -41,6 +48,8 @@ babel-lang: french
 # Fonctionnalités de l'application
 
 !include chapters/users.md
+
+\newpage
 
 !include chapters/upload-fichier.md
 

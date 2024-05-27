@@ -1,4 +1,4 @@
-## Architecture physique
+# Architecture physique
 
 Pour répondre à la problématique de l'énoncé tout en respectant les contraintes, nous avons utilisé une architecture client-serveur où le serveur ne peut pas être considéré comme un acteur de confiance. De ce fait, il a été nécessaire de mettre en place un chiffrement de bout en bout des informations sensibles. De plus, la sécurité des différents composants de l'application devait être assurée. Pour cela, nous avons utilisé différentes technologies pour chaque composant de l'architecture.
 
